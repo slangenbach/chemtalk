@@ -167,7 +167,7 @@ Stefan Langenbach
 <blockquote>
 <p>The future is already here. It’s just not evenly distributed - William Gibson</p>
 </blockquote>
-<p>How is voice mode working today?</p>
+<p>Where is voice mode already working today?</p>
 <ul>
 <li class="fragment"><strong>Office workers:</strong> Easy access — think ChatGPT voice mode 👩🏻‍💼</li>
 <li class="fragment"><strong>Drivers:</strong> Conditional — connectivity, attention, and company rules 🚗</li>
@@ -175,7 +175,11 @@ Stefan Langenbach
 <li class="fragment"><strong>Plant workers:</strong> Highly constrained — noise, EX restrictions, and connectivity 👷🏻‍♀️</li>
 </ul>
 <aside class="notes">
-<p>About 1 minute. The technology exists, but access varies by working environment. These are interaction constraints, not a verdict that voice is impossible on a plant floor. Transition: what would it take to make the existing assistant accessible here?</p>
+<ul>
+<li>About 1 minute.</li>
+<li>The technology exists, but access varies by working environment.</li>
+<li>Transition: what would it take to make the existing assistant accessible here?</li>
+</ul>
 <style type="text/css">
         span.MJX_Assistive_MathML {
           position:absolute!important;
@@ -200,7 +204,10 @@ Stefan Langenbach
 <li>Q&amp;A</li>
 </ol>
 <aside class="notes">
-<p>About 30 seconds. The presentation moves from the decision to its business and engineering rationale, then to the path to production.</p>
+<ul>
+<li>About 30 seconds.</li>
+<li>The presentation moves from the decision to its business and engineering rationale, then to the path to production.</li>
+</ul>
 <style type="text/css">
         span.MJX_Assistive_MathML {
           position:absolute!important;
@@ -216,7 +223,7 @@ Stefan Langenbach
 <section class="title-slide slide level1 center">
 <h1>Executive Summary 🎯</h1>
 <blockquote>
-<p><strong>One CoVA, different voice experiences — matched to the users working environment.</strong></p>
+<p><strong>One CoVA, different voice experiences — matching the users working environment.</strong></p>
 </blockquote>
 <ul>
 <li><strong>Start simple:</strong> Extend CoVA with turn-based voice interaction.</li>
@@ -224,7 +231,12 @@ Stefan Langenbach
 <li><strong>Compare deliberately:</strong> Hybrid and full-duplex where they improve task completion.</li>
 </ul>
 <aside class="notes">
-<p>About 1 minute. Recommend a baseline first, then compare alternatives using the same tasks. Reuse CoVA’s knowledge and permissions. We are proposing a validation programme, not assuming a single voice experience suits every role.</p>
+<ul>
+<li>About 1 minute.</li>
+<li>Recommend a <strong>baseline</strong> first, then compare alternatives using the same tasks.</li>
+<li>Reuse CoVA’s knowledge and permissions.</li>
+<li>We are proposing a validation programme, not assuming a single voice experience suits every role.</li>
+</ul>
 <style type="text/css">
         span.MJX_Assistive_MathML {
           position:absolute!important;
@@ -246,15 +258,18 @@ Stefan Langenbach
 <section class="slide level2">
 <h2>What is the real challenge? 🤔</h2>
 <blockquote>
-<p>Enable deskless workers to interact with CoVA <strong>safely</strong>, <strong>reliably</strong>, and <strong>hands-free</strong> in constrained environments.</p>
+<p>Enable blue-collar workers to interact with CoVA <strong>safely</strong>, <strong>reliably</strong>, and <strong>hands-free</strong> in constrained environments.</p>
 </blockquote>
 <ul>
-<li><strong>Status quo:</strong> CoVA serves office staff well via text chat.</li>
-<li><strong>Problem:</strong> Plant operators, lab techs, and drivers must stop work, defer questions, or skip queries entirely.</li>
+<li><strong>Status quo:</strong> CoVA serves white-collar staff well via text chat.</li>
+<li><strong>Problem:</strong> Plant operators, lab technicans, and drivers must stop work, defer questions, or skip queries entirely.</li>
 <li><strong>Goal:</strong> Build robust voice interface<strong>s</strong> tailored to each environment’s physical and technical constraints.</li>
 </ul>
 <aside class="notes">
-<p>About 1.5 minutes. <strong>Emphasize the plural in interfaces</strong>. Hands-free is the goal; a glove-compatible PTT control may be the practical first step. The case study requires spoken input and spoken or readable answers with conversational latency. The scope is access to the existing assistant, not replacing its backend or adding autonomous plant control.</p>
+<ul>
+<li>About 1.5 minutes.</li>
+<li><strong>Emphasize the plural in interfaces</strong>. Hands-free is the goal; a glove-compatible PTT control may be the practical first step.</li>
+</ul>
 <style type="text/css">
         span.MJX_Assistive_MathML {
           position:absolute!important;
@@ -273,10 +288,10 @@ Stefan Langenbach
 <div class="column" style="width:50%;">
 <p><strong>Assumptions</strong></p>
 <ul>
-<li>CoVA provides identity, permissions, knowledge access, and text responses.</li>
-<li>We use the <strong>Angular / TypeScript / AWS</strong> the fundament.</li>
+<li>CoVA provides identity, permissions, message history, knowledge access, and text responses.</li>
+<li><strong>Angular / TypeScript / AWS</strong> is the fundament.</li>
 <li><strong>English first</strong>, using company-managed pilot devices.</li>
-<li>Stakeholder support and budget for a representative pilot exist.</li>
+<li>Stakeholder support (top management, plant, worker council, etc.) and budget for a representative pilot are a given.</li>
 </ul>
 </div><div class="column" style="width:50%;">
 <p><strong>Constraints</strong></p>
@@ -284,11 +299,15 @@ Stefan Langenbach
 <li>Device use and EX requirements vary by area.</li>
 <li>Noise and PPE affect speaking <strong>and hearing</strong>.</li>
 <li>Connectivity ranges from good to <strong>absent</strong>.</li>
-<li>Activation must work with the user’s task and equipment.</li>
 </ul>
 </div></div>
 <aside class="notes">
-<p>About 1.5 minutes. Assumptions come from context.md; pilot support and equipment budget need validation. Confirm the CoVA integration contract rather than assuming an existing public REST API. English is a technical starting point, not evidence of suitability for local-language users. Use explicit PTT/session activation initially; full-duplex does not require an always-listening wake word.</p>
+<ul>
+<li>About 1.5 minutes.</li>
+<li>English is a technical starting point, not evidence of suitability for local-language users.</li>
+<li>Use explicit PTT/session activation initially</li>
+<li>Full-duplex does not require an always-listening wake word.</li>
+</ul>
 <style type="text/css">
         span.MJX_Assistive_MathML {
           position:absolute!important;
@@ -311,9 +330,12 @@ Stefan Langenbach
 <p>A worker speaks a question and hears a useful answer quickly — <strong>without removing PPE or reaching for a keyboard</strong>, when the task permits it.</p>
 <p><strong>Short answers. Clear recording status. Easy repeat and stop.</strong></p>
 <aside class="notes">
-<p>About 1 minute. Useful means understandable, relevant, and usable in the current task.</p>
-<p>Why “when the task permits it”? Safety always takes precedence. Voice assistance is designed for inspection rounds, troubleshooting, and lab reference lookup—never for distracting an operator during safety-critical, high-focus chemical handling or active valve transfers.</p>
-<p>A spoken wall of text is not a good voice interface; offer a short answer followed by more detail on request, with references available on screen.</p>
+<ul>
+<li>About 1 minute.</li>
+<li>Useful means: understandable, relevant, and usable in the current task.</li>
+<li>Why “when the task permits it”? Safety always takes precedence.</li>
+<li>A spoken wall of text is not a good voice interface; offer a short answer followed by more detail on request, with references available on screen.</li>
+</ul>
 <style type="text/css">
         span.MJX_Assistive_MathML {
           position:absolute!important;
@@ -354,14 +376,17 @@ Stefan Langenbach
 </tr>
 <tr class="odd">
 <td><strong>Driver</strong></td>
-<td>Continue working on tasks when not in front of the computer</td>
+<td>Continue working on tasks despite being AFK (away from keyboard)</td>
 <td>Access when typing is impractical</td>
 </tr>
 </tbody>
 </table>
 <p>Prioritize by <strong>frequency × friction removed × feasibility * value generated</strong>.</p>
 <aside class="notes">
-<p>About 1.5 minutes. Choose a frequent, bounded information-retrieval task with usable source material and permitted device use. Do not assume all labs have lower barriers than all plant areas. Observe users and establish the current workflow before selecting the pilot. Drivers need a different activation and attention model; do not ask them to operate a phone PTT button while driving. Buy speech capabilities and approved equipment; build the CoVA integration and environment-specific UX.</p>
+<ul>
+<li>About 1.5 minutes.</li>
+<li>Choose a frequent, bounded information-retrieval task with usable source material and permitted device use.</li>
+</ul>
 <style type="text/css">
         span.MJX_Assistive_MathML {
           position:absolute!important;
@@ -377,16 +402,19 @@ Stefan Langenbach
 <section class="slide level2">
 <h2>Business Value: Make It Measurable 📐</h2>
 <blockquote>
-<p>What improves when the <strong>same CoVA</strong> becomes accessible by voice?</p>
+<p>What improves when the CoVA becomes accessible by voice?</p>
 </blockquote>
-<p><strong>100 users × 3 queries/day × 1 min saved = ~1,100 hrs/year</strong></p>
+<p>Example: <strong>100 users × 3 queries/day × 1 min saved = ~1,300 hrs/year</strong> (assuming 253 working days)</p>
 <ul>
 <li><strong>Direct benefit:</strong> Hands-busy lookup without stopping tasks or walking to terminals.</li>
 <li><strong>Strategic lever:</strong> Faster anomaly resolution avoids costly line stoppages.</li>
-<li><strong>Validation gate:</strong> Measure actual time saved vs.&nbsp;baseline workflow before expanding.</li>
 </ul>
 <aside class="notes">
-<p>About 1.5 minutes. This is an illustrative calculation, not a Covestro forecast. Validate successful usage, baseline time, and net time saved including retries. Capacity released is not automatically cash savings. Subtract implementation, equipment, speech/model inference, hosting, and support costs when assessing economics. MTTR and first-time-fix rate are downstream measures for maintenance expansion, not universal KPIs or benefits attributable to voice without evidence. Avoid transferring vendor AI-maintenance benchmarks to this interface.</p>
+<ul>
+<li>About 1.5 minutes.</li>
+<li>Capacity released is not automatically cash savings.</li>
+<li>MTTR and first-time-fix rate are downstream measures for maintenance expansion, not universal KPIs or benefits attributable to voice without evidence</li>
+</ul>
 <style type="text/css">
         span.MJX_Assistive_MathML {
           position:absolute!important;
@@ -429,17 +457,16 @@ Stefan Langenbach
 <td><strong>Domain accuracy</strong></td>
 <td>Correct chemicals, equipment IDs, numbers, and units</td>
 </tr>
-<tr class="odd">
-<td><strong>Business impact</strong></td>
-<td>Task time compared with the baseline workflow</td>
-</tr>
 </tbody>
 </table>
 <p><strong>Proposed pilot latency target:</strong> p95 ≤ 3 seconds in agreed test conditions.</p>
 <aside class="notes">
-<p>About 2 minutes. Target is a hypothesis to agree with users, not an industry benchmark.</p>
-<p>Latency budget justification (p95 ≤ 3s): - Human conversational psychology: If latency exceeds 2–3s, users assume the system failed and press PTT again, causing duplicate queries. - Component breakdown: Network uplink/downlink (200-400ms) + STT finalization (300-600ms) + CoVA RAG &amp; LLM response (1200-1800ms) + TTS audio chunk synthesis (200-400ms) = ~1.9s to 3.2s. Median (p50) sits ~2s; p95 under 3s keeps user trust high.</p>
-<p>Evaluate meaningful response latency, not a filler phrase such as ‘Let me check’. For full-duplex, annotate utterance end consistently and measure interruption-to-playback-stop separately. Track return usage, clarification, retries, mode changes, and user feedback as diagnostic measures. Domain accuracy should use an expert-labelled test set; overall WER alone hides important entity errors. Define task-specific quality gates with domain experts before field expansion; do not invent a universal accuracy threshold.</p>
+<ul>
+<li>About 2 minutes</li>
+<li>Latency budget justification (p95 ≤ 3s): Human conversational psychology says, if latency exceeds 2–3s, users assume the system failed and press PTT again, causing duplicate queries.</li>
+<li>Evaluate meaningful response latency, not a filler phrase such as ‘Let me check’.</li>
+<li>Track return usage, clarification, retries, mode changes, and user feedback as diagnostic measures.</li>
+</ul>
 <style type="text/css">
         span.MJX_Assistive_MathML {
           position:absolute!important;
@@ -487,7 +514,14 @@ Stefan Langenbach
 </table>
 <p><strong>Processing location</strong> and <strong>conversation style</strong> are separate decisions.</p>
 <aside class="notes">
-<p>About 2 minutes. STT means speech-to-text; TTS means text-to-speech; PTT means push-to-talk. Cloud Transcribe/Polly are the turn-based baseline candidates. Local models such as Whisper are candidates to benchmark, not a settled mobile solution. Nova 2 Sonic is the full-duplex candidate. Hybrid can be an environment-specific mode rather than an automatic fallback on every latency spike. Compare on identical tasks and devices.</p>
+<ul>
+<li>About 2 minutes.</li>
+<li>STT means speech-to-text; TTS means text-to-speech; PTT means push-to-talk.</li>
+<li>Cloud Transcribe/Polly are the turn-based baseline candidates.</li>
+<li>Local models such as Whisper are candidates to benchmark, not a settled mobile solution.</li>
+<li>AWS Nova 2 Sonic is the full-duplex candidate.</li>
+<li>Hybrid can be an environment-specific mode rather than an automatic fallback on every latency spike.</li>
+</ul>
 <style type="text/css">
         span.MJX_Assistive_MathML {
           position:absolute!important;
@@ -544,7 +578,15 @@ sequenceDiagram
 </div>
 </div>
 <aside class="notes">
-<p>About 2 minutes. Both modes use the same CoVA answer and permissions. The diagram is logical: API Gateway/Lambda can implement bounded turn-based requests; establish audio/request limits and use an asynchronous path if processing exceeds the chosen integration timeout. Device credentials authenticate access, but the backend must validate the user session and enforce CoVA permissions. Preserve text and source references. Use service-compatible audio formats; codec selection is a measured implementation detail. Hybrid needs a text connection to CoVA.</p>
+<ul>
+<li>About 2 minutes.</li>
+<li>Both modes use the same CoVA .</li>
+<li>The diagram is logical: API Gateway/Lambda can implement bounded turn-based requests; establish audio/request limits and use an asynchronous path if processing exceeds the chosen integration timeout.</li>
+<li>Device credentials authenticate access, but the backend must validate the user session and enforce CoVA permissions.</li>
+<li>Preserve text and source references.</li>
+<li>Use service-compatible audio formats; codec selection is a measured implementation detail.</li>
+<li>Hybrid needs a text connection to CoVA.</li>
+</ul>
 <style type="text/css">
         span.MJX_Assistive_MathML {
           position:absolute!important;
@@ -589,9 +631,14 @@ sequenceDiagram
 </div>
 </div>
 <aside class="notes">
-<p>About 2 minutes. Use <code>InvokeModelWithBidirectionalStream</code> and adapt the AWS TypeScript sample [1].</p>
-<p>Interruption handling (explain verbally): Nova Sonic natively handles interruptions. When the worker speaks while audio is playing, new audio events sent via WebSocket trigger an interruption event from Sonic back to the Session Service, causing the UI to immediately cancel audio playback.</p>
-<p>Full-duplex adds a conversational model around CoVA. Configure information requests to use CoVA and evaluate whether Sonic faithfully preserves tool results, especially numbers, units, and instructions. Do not assume a prompt guarantees this. Keep acknowledgements distinct from substantive answers; require the tool result before answering a company-knowledge question. The session service is persistent compute, not an ordinary Lambda invocation per audio chunk. Hosting is a separate decision on the Deployment slide.</p>
+<ul>
+<li>About 2 minutes.</li>
+<li>Use <code>InvokeModelWithBidirectionalStream</code> and adapt the AWS TypeScript sample [1].</li>
+<li>Interruption handling: Nova Sonic natively handles interruptions. When the worker speaks while audio is playing, new audio events sent via WebSocket trigger an interruption event from Sonic back to the Session Service, causing the UI to immediately cancel audio playback.</li>
+<li>Full-duplex adds a conversational model around CoVA.</li>
+<li>Configure information requests to use CoVA and evaluate whether Sonic faithfully preserves tool results, especially numbers, units, and instructions.</li>
+<li>The session service is persistent compute, not an ordinary Lambda invocation per audio chunk.</li>
+</ul>
 <style type="text/css">
         span.MJX_Assistive_MathML {
           position:absolute!important;
@@ -650,7 +697,14 @@ sequenceDiagram
 </table>
 <p><strong>Accuracy, latency, battery, and cost: benchmark rather than assume.</strong></p>
 <aside class="notes">
-<p>About 1 minute. Local STT is not inherently less accurate, and cloud STT is not automatically best for chemical jargon. Results depend on model, vocabulary support, microphone, accent, and noise. Local battery cost depends on actual duty cycle, not continuous inference for an entire shift. Local model distribution can be separate from app updates. Compare candidate runtimes on the supported Android/iOS devices before choosing one.</p>
+<ul>
+<li>About 1 minute.</li>
+<li>Local STT is not inherently less accurate, and cloud STT is not automatically best for chemical jargon.</li>
+<li>Results depend on model, vocabulary support, microphone, accent, and noise.</li>
+<li>Local battery cost depends on actual duty cycle, not continuous inference for an entire shift.</li>
+<li>Local model distribution can be separate from app updates.</li>
+<li>Compare candidate runtimes on the supported Android/iOS devices before choosing one.</li>
+</ul>
 <style type="text/css">
         span.MJX_Assistive_MathML {
           position:absolute!important;
@@ -672,7 +726,13 @@ sequenceDiagram
 <li><strong>Audio verification:</strong> Validate phonetic clarity and fidelity of synthesized answers.</li>
 </ul>
 <aside class="notes">
-<p>About 1 minute. Recognition and knowledge grounding solve different problems: retrieving the right document cannot reliably fix an incorrectly recognized chemical name. Amazon Transcribe supports custom vocabularies [2]; do not claim the same API exists for Sonic. Use recordings with representative accents, noise, and PPE, plus held-out evaluation data. Confidence-based confirmation is an option only where appropriate scores are exposed and calibrated. A universal 0.85 threshold is not justified. Evaluate whether spoken acronyms, decimal values, and units are understandable to listeners.</p>
+<ul>
+<li>About 1 minute.</li>
+<li>Recognition and knowledge grounding solve different problems: retrieving the right document cannot reliably fix an incorrectly recognized chemical name.</li>
+<li>Amazon Transcribe supports custom vocabularies [2]; do not claim the same API exists for Sonic.</li>
+<li>Use recordings with representative accents, noise, and PPE, plus held-out evaluation data. Confidence-based confirmation is an option only where appropriate scores are exposed and calibrated.</li>
+<li>A universal 0.85 threshold is not justified. Evaluate whether spoken acronyms, decimal values, and units are understandable to listeners.</li>
+</ul>
 <style type="text/css">
         span.MJX_Assistive_MathML {
           position:absolute!important;
@@ -688,15 +748,18 @@ sequenceDiagram
 <section class="slide level2">
 <h2>Handling Noise &amp; PPE 🎧</h2>
 <ul>
-<li><strong>Input:</strong> Suitable microphone and noise suppression.</li>
+<li><strong>Input:</strong> Suitable, directional microphone and noise suppression.</li>
 <li><strong>Output:</strong> Intelligible speech with required hearing protection.</li>
 <li><strong>Controls:</strong> Glove-compatible activation, repeat/stop, clear recording status.</li>
 <li><strong>Validation:</strong> Actual phone + headset + PPE, during representative tasks.</li>
 </ul>
 <aside class="notes">
-<p>About 1 minute. Hardware is part of the solution, not an accessory.</p>
-<p>What does “intelligible” mean here? Audible ≠ intelligible. High plant noise combined with hearing protection (earplugs/ear defenders attenuating 25–30 dB) turns soft consonants into muffled sound. If CoVA says “fifteen” and the worker hears “fifty”, or confuses “sulfate” with “sulfite”, it creates severe safety hazards. Intelligible speech requires dynamic range compression, EQ peaking in the speech clarity band (1–3 kHz), and deliberate pacing.</p>
-<p>Test intelligibility without compromising awareness of alarms or colleagues. A headset’s PTT button may not be exposed to browser code; validate Bluetooth controls, browser lifecycle, microphone permissions, and background behavior. If the PWA cannot support the required hardware interaction, assess a native bridge. Equipment approval applies to the complete phone/headset/accessory setup in the target zone, not just an EX-labelled headset. Start with existing devices where permitted.</p>
+<ul>
+<li>About 1 minute.</li>
+<li>Hardware is part of the solution, not an accessory.</li>
+<li>What does “intelligible” mean here? Audible ≠ intelligible. High plant noise combined with hearing protection (earplugs/ear defenders attenuating 25–30 dB) turns soft consonants into muffled sound. If CoVA says “fifteen” and the worker hears “fifty”, or confuses “sulfate” with “sulfite”, it creates severe safety hazards. Intelligible speech requires dynamic range compression, EQ peaking in the speech clarity band (1–3 kHz), and deliberate pacing.</li>
+<li>A headset’s PTT button may not be exposed to browser code; validate Bluetooth controls, browser lifecycle, microphone permissions, and background behavior. If the PWA cannot support the required hardware interaction, assess a native bridge.</li>
+</ul>
 <style type="text/css">
         span.MJX_Assistive_MathML {
           position:absolute!important;
@@ -716,9 +779,17 @@ sequenceDiagram
 <li><strong>Low bandwidth:</strong> Local STT/TTS may keep text-based access usable.</li>
 <li><strong>No connection:</strong> Clearly indicate that live CoVA is unavailable.</li>
 </ul>
-<p><strong>Change modes explicitly. Avoid silently losing or replaying a question.</strong></p>
+<p><strong>Change modes explicitly</strong>: Avoid silently losing or replaying a question.</p>
 <aside class="notes">
-<p>About 1 minute. Measure connection setup, packet loss, drops, and reconnection, not just bandwidth. A fallback based on one two-second delay is too simplistic; use observed network behavior and visible user control. Cancel stale requests and prevent duplicate turns after retry. Text display is an option only when eyes and equipment permit it. A limited cache of approved information would be a separate versioned capability; local STT alone does not provide offline knowledge access. Geolocation may suggest a mode but is not proof of device permission and should not automatically start recording.</p>
+<ul>
+<li>About 1 minute.</li>
+<li>Measure connection setup, packet loss, drops, and reconnection, not just bandwidth.</li>
+<li>A fallback based on one two-second delay is too simplistic; use observed network behavior and visible user control.</li>
+<li>Cancel stale requests and prevent duplicate turns after retry.</li>
+<li>Text display is an option only when eyes and equipment permit it.</li>
+<li>A limited cache of approved information would be a separate versioned capability; local STT alone does not provide offline knowledge access.</li>
+<li>Geolocation may suggest a mode but is not proof of device permission and should not automatically start recording.</li>
+</ul>
 <style type="text/css">
         span.MJX_Assistive_MathML {
           position:absolute!important;
@@ -741,8 +812,8 @@ sequenceDiagram
 <ul>
 <li><strong>Frontend:</strong> Angular voice UI / PWA, delivered via S3 + CloudFront.</li>
 <li><strong>Turn-based API:</strong> API Gateway + Lambda; Transcribe/Polly and CoVA.</li>
-<li><strong>Full-duplex:</strong> Persistent TypeScript-based voice session service; AWS Nova 2 Sonic via Bedrock.</li>
-<li><strong>Delivery:</strong> AWS CDK + GitHub Actions; pilot feature flags and rollback.</li>
+<li><strong>Full-duplex:</strong> Persistent TypeScript-based voice session service; AWS Nova 2 Sonic (or comparable model) via Bedrock.</li>
+<li><strong>Delivery:</strong> AWS CDK + GitHub Actions; pilot feature flags; canary rollout.</li>
 </ul>
 <p><strong>Hosting candidates for the full-duplex session service:</strong></p>
 <ul>
@@ -750,7 +821,12 @@ sequenceDiagram
 <li><strong>AWS ECS / Fargate:</strong> Shared container pool behind an ALB (ideal for production scale with high, sustained concurrency).</li>
 </ul>
 <aside class="notes">
-<p>About 2 minutes. Propose testing MicroVMs first for the intermittent pilot, subject to region availability and IaC support, rather than asserting they are faster or cheaper. These are distinct from ordinary Lambda functions. A backend session broker authenticates the user, launches a MicroVM, and returns its endpoint plus a short-lived port-scoped JWE token. Browser WebSockets can pass MicroVM authentication via subprotocols [3]. That token grants endpoint access, not CoVA permissions. MicroVMs have an eight-hour maximum lifespan including suspension, no load balancing between their dedicated endpoints, and snapshot/storage charges while suspended [4]. Keep them running during active audio; resume hooks must refresh credentials and reconnect to Bedrock. Sonic has a separate eight-minute connection limit and renewal pattern [5]. Fargate may be more efficient when many sessions share warm tasks. Compare full session-ready latency, concurrent session capacity, recovery, and cost per successful task. Ordinary Lambda response streaming is not itself a bidirectional WebSocket server; API Gateway WebSocket integrations retain their own limits [6]. Deploy to staging, run regression evaluation, then use feature flags/canary cohorts with a quick rollback path. Use GitHub OIDC for deployment credentials.</p>
+<ul>
+<li>About 2 minutes.</li>
+<li>Propose testing MicroVMs first for the intermittent pilot, subject to region availability and IaC support, rather than asserting they are faster or cheaper. These are distinct from ordinary Lambda functions. A backend session broker authenticates the user, launches a MicroVM, and returns its endpoint plus a short-lived port-scoped JWE token. Browser WebSockets can pass MicroVM authentication via subprotocols [3]. That token grants endpoint access, not CoVA permissions. MicroVMs have an eight-hour maximum lifespan including suspension, no load balancing between their dedicated endpoints, and snapshot/storage charges while suspended [4]. Keep them running during active audio; resume hooks must refresh credentials and reconnect to Bedrock. Sonic has a separate eight-minute connection limit and renewal pattern [5].</li>
+<li>Fargate may be more efficient when many sessions share warm tasks. Compare full session-ready latency, concurrent session capacity, recovery, and cost per successful task. Ordinary Lambda response streaming is not itself a bidirectional WebSocket server; API Gateway WebSocket integrations retain their own limits [6].</li>
+<li>Deploy to staging, run regression evaluation, then use feature flags/canary cohorts with a quick rollback path. Use GitHub OIDC for deployment credentials.</li>
+</ul>
 <style type="text/css">
         span.MJX_Assistive_MathML {
           position:absolute!important;
@@ -785,7 +861,7 @@ sequenceDiagram
 <td>Known failures understood; quality gates agreed</td>
 </tr>
 <tr class="even">
-<td><strong>Pilot</strong></td>
+<td><strong>Prototype</strong></td>
 <td>One frequent, bounded use case</td>
 <td>Usable answers, acceptable latency, workflow benefit</td>
 </tr>
@@ -803,7 +879,12 @@ sequenceDiagram
 </table>
 <p><strong>Proposed evaluation window: 6–12 weeks</strong>, not a promise of global production.</p>
 <aside class="notes">
-<p>About 2 minutes. Recruit representative users with operations, domain experts, and relevant local stakeholders. Start with a permitted environment and a bounded use case, not an arbitrary headcount. Give users a short onboarding session and a clear feedback/support route. For lab users, focus on glove-compatible lookup; for plant users, equipment approval and noise; for drivers, brief audio and suitable controls where permitted. Compare modes on the same tasks rather than different populations alone. Local-language validation is a later expansion gate, even if a model technically supports the language. Name a product owner and operational owner before scaling.</p>
+<ul>
+<li>About 2 minutes.</li>
+<li>Recruit representative users with operations, domain experts, and relevant local stakeholders.</li>
+<li>Start with a permitted environment and a bounded use case, not an arbitrary headcount.</li>
+<li>Give users a short onboarding session and a clear feedback/support route.</li>
+</ul>
 <style type="text/css">
         span.MJX_Assistive_MathML {
           position:absolute!important;
@@ -822,10 +903,17 @@ sequenceDiagram
 <li><strong>Operations:</strong> Latency, failed sessions, connection drops, cost per successful task.</li>
 <li><strong>Quality:</strong> Domain errors, clarification, and task failure by mode and environment.</li>
 <li><strong>Feedback:</strong> Weekly review with users and domain experts.</li>
-<li><strong>Improvement:</strong> Versioned evaluation before changing models, vocabulary, or prompts.</li>
 </ul>
 <aside class="notes">
-<p>About 1.5 minutes. CloudWatch dashboards and correlated session traces across voice and CoVA. Separate capture, transcription, retrieval/answer, streaming, and playback failures. Alert on service degradation and disable a problematic mode if needed. Track model, vocabulary, prompt, device, and client versions to identify regressions. Do not interpret every clarification as failure; the correct question can prevent a wrong answer. Use selected, authorised diagnostic recordings with defined retention rather than logging all audio by default. Feed knowledge failures back to the CoVA team and audio/UX failures to the voice team.</p>
+<ul>
+<li>About 1.5 minutes.</li>
+<li>CloudWatch dashboards and correlated session traces across voice and CoVA. Separate capture, transcription, retrieval/answer, streaming, and playback failures.</li>
+<li>Alert on service degradation and disable a problematic mode if needed.</li>
+<li>Track model, vocabulary, prompt, device, and client versions to identify regressions.</li>
+<li>Do not interpret every clarification as failure; the correct question can prevent a wrong answer.</li>
+<li>Use selected, authorized diagnostic recordings with defined retention rather than logging all audio by default.</li>
+<li>Feed knowledge failures back to the CoVA team and audio/UX failures to the voice team.</li>
+</ul>
 <style type="text/css">
         span.MJX_Assistive_MathML {
           position:absolute!important;
@@ -847,11 +935,17 @@ sequenceDiagram
 <h2>Limitations 🧐</h2>
 <ul>
 <li><strong>No connectivity</strong>: No (live) CoVA answer.</li>
+<li>EX-certified equipment is costly</li>
 <li>Some environments may <strong>never</strong> support an approved, usable voice setup.</li>
 <li>English-first validates the technology, <strong>not</strong> global adoption.</li>
 </ul>
 <aside class="notes">
-<p>About 1 minute. Equipment cost, battery life, model quality, and operational acceptance remain empirical questions. This assistant is an information-access channel; it is not a substitute for required procedures or emergency systems. Full-duplex spoken-answer fidelity is an additional evaluation concern. Avoid claiming that model support for a language proves usability for a local workforce. Transition: given these limits, here is the next decision to make.</p>
+<ul>
+<li>About 1 minute.</li>
+<li>Equipment cost, battery life, model quality, and operational acceptance remain empirical questions.</li>
+<li>CoVA is an information-access channel; it is not a substitute for required procedures or emergency systems.</li>
+<li>Transition: given these limits, here is the next decision to make.</li>
+</ul>
 <style type="text/css">
         span.MJX_Assistive_MathML {
           position:absolute!important;
@@ -873,7 +967,13 @@ sequenceDiagram
 <li><strong>Expand by environment</strong> when the evidence supports it.</li>
 </ol>
 <aside class="notes">
-<p>About 1.5 minutes. Ask for a bounded pilot with an operational partner and access to representative tasks, devices, and source material. The outcome is evidence for which modes and equipment to productionize, with an owner and support path. We can keep one shared CoVA integration and evaluation framework while supporting multiple voice experiences. Do not promise convergence to one mode or operating every option indefinitely.</p>
+<ul>
+<li>About 1.5 minutes.</li>
+<li>Ask for a bounded pilot with an operational partner and access to representative tasks, devices, and source material.</li>
+<li>The outcome is evidence for which modes and equipment to productionize, with an owner and support path.</li>
+<li>We can keep one shared CoVA integration and evaluation framework while supporting multiple voice experiences.</li>
+<li>Do not promise convergence to one mode or operating every option indefinitely.</li>
+</ul>
 <style type="text/css">
         span.MJX_Assistive_MathML {
           position:absolute!important;
