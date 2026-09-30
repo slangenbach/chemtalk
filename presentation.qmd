@@ -1,0 +1,340 @@
+---
+title: "Talking with AI in constrained industrial environments 👩🏻‍🔬💬🤖"
+subtitle: "Case study for Senior AI engineer at Covestro"
+author: "Stefan Langenbach"
+date: "2026-10-01"
+format:
+  revealjs:
+    theme: white
+    slide-number: true
+    hash-type: number
+    transition: slide
+---
+
+# Agenda 📋 {.smaller}
+
+1. Problem Statement
+1. Approach
+1. Assumptions
+1. Solution Design
+1. Deployment & Rollout
+1. Limitations
+1. Recommendation
+1. Q&A
+
+::: {.notes}
+- Approach: Vision, Options, KPIs and Business Value
+- Solution Design: Architecture, Trade-offs, Chemical Jargon, Noise & PPE
+:::
+
+# Problem Statement 🤔
+
+## Reality Check
+
+> The future is already here. It's just not evenly distributed 💁🏻‍♂️
+
+::: {.incremental}
+- Office workers: ✅ (think ChatGPT voice mode)
+- Drivers: ✅ (same, given sufficient mobile connection)
+- Lab technicians: ⚠️ (PPE, limited connectivity, sterile protocols)
+- Plant workers: ❌ (EX restrictions, noisy environment, PPE, limited connectivity)
+:::
+
+::: {.notes}
+- tbd
+:::
+
+## Status Quo
+
+- CoVA already serves office 👩🏻‍💼 workers well via traditional chat interface
+- Commercially available voice assistant solutions could be integrated into CoVA (and work for drivers 🚗)
+- But lab technicians 👨🏻‍🔬 and plant operators 👷🏻‍♀️ are operating in much more **constrained** environments
+
+## The Real Challenge
+
+Create voice interface**s**, which lets different users group (drivers, lab technicians, plant operators), interact with CoVA **hands-free**, **safely**, and **reliably** in their respective environments.
+
+::: {.notes}
+- Mind the bold **s** in interfaces
+:::
+
+# Approach 🛠
+
+## Vision
+
+> What do we want to achieve?
+
+A worker in a constrained environment presses a button, speaks a question, and hears an accurate answer quickly — **without** removing PPE or stopping their task.
+
+::: {.notes}
+- tbd
+:::
+
+## Options
+
+> How do we get there?
+
+1. **KISS**: Use on-device STT (speech-to-text) and TTS (text-to-speech) for a simple proof-of-concept
+1. **Hybrid**: Use cloud STT/TTS and fall back to on-device STT/TTS when connectivity is poor
+1. **Full-duplex**: Use a bidirectional streaming API to send audio directly to the cloud (~ ChatGPT voice mode)
+
+Start with existing mobile devices where possible to gain experience and move to EX-certified equipment when required
+
+::: {.notes}
+ - We need to carefully review this slide
+:::
+
+## KPIs
+
+> How do we know that we are on track?
+
+- Usage in constrained environments vs office
+- End-to-end latency
+- Domain word-error rate (chemical jargon)
+- Fallback rate (to on-device processing)
+- **NPS:** Quarterly survey
+
+::: {.notes}
+- Suggest real KPIs here, not just "we will measure usage"
+:::
+
+## Business Value
+
+> How we measure success?
+
+- **Adoption:**  Percentage of eligible active users per week
+- **Retention:**  Percentage of users with >3 sessions/week after 30 days
+- **Operational impact:** MTTR reduction (hours) and first-time-fix rate improvement
+- **Safety signal:** Count of safety-critical queries resolved via voice vs. delayed
+
+::: {.notes}
+- Shouldn't we move adoption and retention to the KPI slide?
+- Repair time is a good lever, what else can you think of?
+:::
+
+# Assumptions 💭
+
+## Managing Expectations {.smaller}
+
+:::: {.columns}
+
+::: {.column width="50%"}
+**Assumptions**
+
+- We have buy-in from all major stakeholders (IT, Safety, Plant Operations, Workers Council, etc.) to run a pilot
+- Our solution integrates with the existing CoVA backend (auth, text input/output, history, access to external knowledge, guardrails, etc.)
+- We can build on an AWS-native stack (Bedrock, Lambda, API Gateway, CDK, etc.) using TypeScript
+- English is considered the initial target language
+- Company managed mobile phones are available to all pilot users
+- Budget to purchase EX-certified equipment (c.f. 3M Peltor) is available
+:::
+
+::: {.column width="50%"}
+**Constraints**
+
+- Many plants require EX-certified devices; mobile phone usage may be restricted
+- Plant noise, reverberation, and PPE degrade audio quality
+- Internet connectivity in labs and plants may be limited or non-existent
+- Safety rules and data privacy considerations likely prohibit always-listening *wake word* activation (*Hey, CoVA...*)
+:::
+
+::::
+
+::: {.notes}
+- No need to re-invent the wheel
+- Note to self: What about the Angular frontend? Can it easily be extended to support voice mode?
+- Consider adapting the title
+:::
+
+# Solution Design 👩🏻‍🔧
+
+## Options
+
+1. KISS
+1. Hybrid
+1. Full-duplex
+
+## Architecture (KISS & Hybrid)
+
+```text
+┌─────────────┐   Audio (Opus)   ┌──────────────┐   Text   ┌──────────────┐
+│  MDM Phone  │ ───────────────> │  API GW      │ ───────> │  CoVA Text   │
+│  + Headset  │ <─────────────── │  (WebSocket) │ <─────── │  API (REST)  │
+└─────────────┘   Audio (PCM)    └──────────────┘  Answer  └──────────────┘
+                                        │
+                                        v
+                              ┌───────────────────┐
+                              │  AWS Bedrock      │
+                              │  Nova Sonic (STT) │
+                              │  Nova Sonic (TTS) │
+                              └───────────────────┘
+```
+
+- **Fallback path:** If WebSocket latency > 2s or connection drops, client falls back to on-device Whisper STT + text display.
+- **Full-duplex path:** A separate `/voice/stream` WebSocket endpoint will stream audio directly to Nova Sonic's bidirectional speech-to-speech API, bypassing discrete STT/TTS steps for a truly conversational experience.
+
+::: {.notes}
+The architecture is intentionally simple. WebSockets via API Gateway are a natural fit for streaming audio. Opus encoding reduces bandwidth. The fallback path is crucial—this is where many voice projects fail in industrial settings. I explicitly mention on-device Whisper, which is a 80MB model that runs fine on modern phones.
+- Transform
+:::
+
+## Architecture (Full-duplex)
+
+tbd
+
+Build on [sample code](https://github.com/aws-samples/amazon-nova-samples/tree/main/speech-to-speech/amazon-nova-2-sonic/sample-codes/websocket-nodejs) from AWS using `InvokeModelWithBidirectionalStream` API for bidirectional streaming. The `/voice/stream` endpoint will handle both audio input and output in a single WebSocket connection, reducing latency and improving conversational flow.
+
+## Trade offs
+
+> Why not go on-device STT for everything?
+
+| Factor | Cloud STT (Nova Sonic) | On-Device STT (Whisper) |
+|--------|------------------------|-------------------------|
+| **Chemical jargon accuracy** | High — contextual biasing with dynamic 500-term vocabulary | Lower — base/tiny model; hard to update domain vocab without app redeploy |
+| **Battery impact** | Minimal — only audio encoding on device | High — continuous CPU/GPU inference for 8h shifts |
+| **Model updates** | Instant — cloud deployment | Requires MDM/app store rollout to 1,000+ devices |
+| **Multi-language** | Seamless — Nova Sonic supports EN, DE, ES natively | Needs separate model files or larger multilingual download |
+| **Connectivity requirement** | Needs stable connection | Works offline or on poor connectivity |
+
+**Verdict:** Cloud-primary for accuracy and battery; on-device Whisper as the **dead-zone fallback**.
+**Zone-aware deployment:** In high-connectivity zones (labs, offices), cloud STT is primary. In low-connectivity plant floors, we can A/B test flipping to **on-device-primary** where battery trade-offs are acceptable.
+
+::: {.notes}
+This is the slide that shows deep engineering judgment. You are explicitly comparing three architectural options and defending your choice with data — while being honest about what you got wrong.
+
+Key rebuttals to memorize:
+- **On-device STT for everything?** Wrong for this use case. Whisper tiny/base has WER ~15-20% on technical jargon vs. cloud contextual-biased models at <5%. In a chemical plant, "toluene diisocyanate" misheard as "toluene isocyanate" is a safety risk. Cloud contextual biasing fixes this instantly.
+- **NVIDIA Parakeet?** It IS deployable on mobile — iOS via CoreML (sebastian-software/parakeet-coreml) and Android via ONNX Runtime (soniqo.audio/guides/parakeet/android, mpnikhil/parakeet-voice-android). But it's a 0.6B parameter transducer with no language forcing, which is a safety issue in German plants. Also larger and newer ecosystem. We keep it as an A/B test candidate, not the Phase 1 default.
+- **Why did you initially say Parakeet doesn't work on mobile?** Because I conflated "CUDA-native training" with "deployment target." Correcting yourself in the interview when presented with new data shows intellectual honesty — a senior trait.
+- **Zone-aware?** This shows you don't cargo-cult one architecture. Labs get cloud STT for accuracy. Plant floors get on-device fallback for survival. We measure and adapt via A/B telemetry.
+:::
+
+## Dealing with Chemical Jargon
+
+- Build **custom vocabulary**, consisting of domain-specific terms, variations and Covestro jargon, which is constantly updated and refined
+- Use **contextual grounding** to improve accuracy (CoVA already has access to company internal knowledge)
+- **Human-in-the-loop fallback:** If confidence < 0.85, prompt user to confirm via PTT ("Did you mean TDI?")
+
+::: {.notes}
+Chemical jargon is a known failure mode for generic models. I propose a measurable mitigation (WER on a domain test set) which shows engineering rigor. The human-in-the-loop idea respects safety—it's better to ask once than to give the wrong SOP.
+:::
+
+## Handling Noise & PPE
+
+- **Audio Input** Directional microphone with noise suppression
+- **Push-to-Talk (PTT)** button on headset
+- **Over-ear or in-ear headset** for use with/under helmets and with/without ear protection
+- **Optional text transcription** displayed on phone screen
+
+::: {.notes}
+- tbd
+:::
+
+# Deployment, Rollout & Observability 👷🏻
+
+## Deployment
+
+- Deploy AWS services (models on Bedrock, Lambda, API Gateway, CloudFront, etc.) and logic via **AWS CDK** within GitHub Actions CI/CD pipeline
+- Use **canary deployment** to gradually roll out to pilot users
+
+- - CloudWatch dashboards for latency, error rates, connection drops
+**Feedback Loop:**
+- Weekly synthesis of failed queries to feed into RAG/grounding improvements
+
+::: {.notes}
+- API Gateway and Lambda for streaming, S3 for short-term audio logging, CloudFront for PWA delivery
+This shows you can operate within their existing stack. The use of WebSocket API Gateway + Lambda is a standard AWS pattern for streaming. Mentioning S3 with a TTL is important—voice data is sensitive, and you don't want to store it forever even if privacy is "limited importance." The canary deployment is critical for safety-critical environments.
+:::
+
+## Rollout
+
+**Pilot phase**
+- **Who:** 50 lab technicians at HQ (controlled environment, lower safety barriers)
+- **What:** Hybrid STT+TTS, English only, PTT button on standard MDM phone
+- **Goal:** Validate jargon accuracy, latency, and UI flow; collect 500+ real queries
+
+**Expansion:**
+- **Who:** 250 plant maintenance and operations staff (supervised areas, non-EX zones)
+- **What:** Add rugged Bluetooth headsets; introduce text fallback; measure MTTR impact
+- **Goal:** Test noise robustness, connectivity fallback, and operational KPIs
+
+**Production:**
+- **Who:** 1,000 workers across plants, where EX-certified devices are approved
+- **What:** Integrate with approved wearables; geo-fenced activation in safe zones only; CMMS integration for first-time-fix tracking
+
+::: {.notes}
+The rollout is deliberately cautious. Chemical companies have long safety-validation cycles. Starting in the lab is smart—lab techs have pain points but lower risk. The geo-fenced activation is a pragmatic safety control: voice mode auto-enables only in designated safe zones, not near volatile processing units.
+:::
+
+# Limitations 🧐 {.smaller}
+
+**Technical:**
+
+- Limited connectivity in some areas may prevent full-duplex streaming and cloud STT/TTS from working reliably
+- On-device fallback has lower accuracy on domain jargon - safety-critical queries should trigger confirmation prompts when fallback is active
+- Full-duplex models (AWS Nova Sonic) are relatively new and not yet battle tested in constrained environments
+
+**Operational:**
+
+- EX-certified equipment is expensive
+- Battery life may not support 8-hour shifts
+- Some environments may ban voice-enabled devices outright due to safety concerns
+
+**Privacy:**
+
+- Voice data is biometric; even if "privacy is limited," GDPR may still require retention limits and consent
+
+::: {.notes}
+- tbd
+:::
+
+# Business Value 💰
+
+> To be moved to other slide
+
+**We don't just save time—we reduce unplanned downtime and maintenance cost.**
+
+**Quantitative (annual impact, 1,000 active voice users):**
+- **Mean Time To Repair (MTTR):** External benchmark: iMaintain's AI chat workflows **cut MTTR by 50%** at a manufacturing plant (4h → 2h), saving **£120,000 per quarter** in downtime costs plus **40% fewer repeat failures**. Voice is even faster than typing.
+  - *Covestro estimate:* 1,000 workers × 2 maintenance events/week × 20 min saved = **~1,300 hours/week recovered**
+- **First-Time-Fix Rate:** Technicians arrive with full context via voice, reducing repeat dispatches. Benchmark data shows **+10–40%** improvement possible.
+- **Unplanned Downtime:** Plant operators resolve anomalies in minutes rather than hours. A single avoided unplanned stoppage on a mid-sized production line can save **€50,000–€200,000**.
+- **Expert Dispatch Cost:** Senior engineers are consulted via CoVA instead of being flown to site. Reduction of just 20 site visits/year saves **€40,000+** in travel and opportunity cost.
+- **Onboarding acceleration:** Maintenance case studies show **30% faster onboarding** for new hires when AI-guided workflows are available.
+
+**Qualitative:**
+- **Safety:** Faster access to emergency protocols and hazardous-material handling procedures without stopping the task or removing PPE.
+- **Capability:** Junior staff perform complex tasks safely because the assistant guides them step-by-step, hands-free.
+- **Inclusion:** 18,000 employees, many deskless, now access the same institutional knowledge as office staff.
+
+::: {.notes}
+Always anchor business value in numbers, even if they are estimates. The phrase "2.5 FTEs" is memorable. Be ready to explain your assumptions (3 queries/day is conservative; some workers may use it 10×, others 0×). The safety argument is the strongest—frame it as risk reduction, not just convenience.
+:::
+
+# Recommendation 📝
+
+> Take advantage of the agentic age
+
+
+1. Implement **both**, the hybrid, cloud-enabled STT+TTS option **and** the full-duplex voice mode
+1. **Prototype** both solutions for different user personas in their respective environments over a 6-12 week period
+1. Build and refine custom vocabulary with domain experts
+1. Start with mobile phones were appropriate, and test EX-certified equipment where necessary
+1. Gradually rollout and operate both solutions, until all users are served well with a **single** solution
+
+::: {.notes}
+- tbd
+:::
+
+# Q&A
+
+Thank you 🙏🏻
+
+::: {.notes}
+Be ready for these likely questions:
+- "How do you handle authentication without typing?" → Answer: Device-bound tokens via MDM + short-lived session from badge tap or voice-biometric opt-in.
+- "What's the cost at scale?" → Answer: AWS sample projects show a **10-minute Nova Sonic session costs ~$0.044** (including STT, TTS, and infrastructure). A typical CoVA voice query lasts 1–2 minutes, so **~$0.005–0.01 per query**. At 1,000 users × 3 queries/day × 250 days = 750,000 queries/year ≈ **$4,000–7,500/year**. One avoided unplanned stoppage pays for the entire program.
+- "Why not use NVIDIA Parakeet on-device?" → Answer: Parakeet IS deployable on mobile — iOS via CoreML/ANE (parakeet-coreml) and Android via ONNX Runtime (parakeet-voice-android, soniqo.audio). We initially dismissed it too quickly. However, Parakeet TDT is a transducer that auto-detects language and cannot be forced to "German only" — a safety issue in German plants. It is also larger (~0.6B params) and newer on mobile. We select Whisper as the pragmatic Phase 1 fallback for language forcing and ecosystem maturity, but keep Parakeet as an A/B test candidate for its streaming latency advantage.
+- "Why not make on-device STT the primary path?" → Answer: Whisper tiny/base WER on technical jargon is ~15-20% vs. cloud contextual-biased models at <5%. In a chemical plant, mishearing a chemical name is a safety risk. Battery and model-update overhead also favor cloud-primary in connected zones. We use on-device only as a dead-zone fallback and A/B test its viability.
+- "What if the model hallucinates an SOP?" → Answer: Same safeguards as text CoVA (RAG grounding, confidence thresholds, human escalation); voice does not weaken the trust layer.
+:::
