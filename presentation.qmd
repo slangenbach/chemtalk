@@ -29,11 +29,9 @@ format:
         </style>
 ---
 
-## Reality Check 💁🏻‍♂️
+## Reality Check: Talking with AI in 2026 💁🏻‍♂️
 
 > The future is already here. It's just not evenly distributed - William Gibson
-
-Where is voice mode already working today?
 
 ::: {.incremental}
 - **Office workers:** Easy access — think ChatGPT voice mode 👩🏻‍💼
@@ -65,7 +63,7 @@ Where is voice mode already working today?
 
 # Executive Summary 🎯
 
-> **One CoVA, different voice experiences — matching the users working environment.**
+> **One CoVA, different voice experiences — matching the user's working environment.**
 
 - **Start simple:** Extend CoVA with turn-based voice interaction.
 - **Test where it gets difficult:** Jargon, noise, PPE, and connectivity.
@@ -85,7 +83,7 @@ Where is voice mode already working today?
 > Enable blue-collar workers to interact with CoVA **safely**, **reliably**, and **hands-free** in constrained environments.
 
 - **Status quo:** CoVA serves white-collar staff well via text chat.
-- **Problem:** Plant operators, lab technicans, and drivers must stop work, defer questions, or skip queries entirely.
+- **Problem:** Plant operators, lab technicians, and drivers must stop work, defer questions, or skip queries entirely.
 - **Goal:** Build robust voice interface**s** tailored to each environment's physical and technical constraints.
 
 ::: {.notes}
@@ -93,14 +91,14 @@ Where is voice mode already working today?
 - **Emphasize the plural in interfaces**. Hands-free is the goal; a glove-compatible PTT control may be the practical first step.
 :::
 
-## Managing Expectations 💭
+## Managing Expectations 💭 {.smaller}
 
 :::: {.columns}
 ::: {.column width="50%"}
 **Assumptions**
 
 - CoVA provides identity, permissions, message history, knowledge access, and text responses.
-- **Angular / TypeScript / AWS** is the fundament.
+- **CoVA's stack (Angular / TypeScript / AWS)** is the fundament: **PWA first**, a native app reserved for environments that demand it.
 - **English first**, using company-managed pilot devices.
 - Stakeholder support (top management, plant, worker council, etc.) and budget for a representative pilot are a given.
 :::
@@ -141,18 +139,18 @@ A worker speaks a question and hears a useful answer quickly — **without remov
 |---|---|---|
 | **Lab technician** | Retrieve a method or reference | Fewer trips to a terminal; faster lookup |
 | **Maintenance technician** | Retrieve troubleshooting knowledge | Less interruption; faster access to context |
-| **Driver** | Continue working on tasks despite being AFK (away from keyboard) | Access when typing is impractical |
+| **Driver** | Handle task queries while driving between sites | Access when typing is impractical |
 
-Prioritize by **frequency × friction removed × feasibility * value generated**.
+Prioritize by **frequency × friction removed × feasibility × value generated**.
 
 ::: {.notes}
-- About 1.5 minutes.
+- About 1 minute.
 - Choose a frequent, bounded information-retrieval task with usable source material and permitted device use.
 :::
 
 ## Business Value: Make It Measurable 📐
 
-> What improves when the CoVA becomes accessible by voice?
+> What improves when CoVA becomes accessible by voice?
 
 Example: **100 users × 3 queries/day × 1 min saved = ~1,300 hrs/year** (assuming 253 working days)
 
@@ -160,7 +158,7 @@ Example: **100 users × 3 queries/day × 1 min saved = ~1,300 hrs/year** (assumi
 - **Strategic lever:** Faster anomaly resolution avoids costly line stoppages.
 
 ::: {.notes}
-- About 1.5 minutes.
+- About 1 minute.
 - Capacity released is not automatically cash savings.
 - MTTR and first-time-fix rate are downstream measures for maintenance expansion, not universal KPIs or benefits attributable to voice without evidence
 :::
@@ -177,7 +175,7 @@ Example: **100 users × 3 queries/day × 1 min saved = ~1,300 hrs/year** (assumi
 **Proposed pilot latency target:** p95 ≤ 3 seconds in agreed test conditions.
 
 ::: {.notes}
-- About 2 minutes
+- About 1.5 minutes.
 - Latency budget justification (p95 ≤ 3s): Human conversational psychology says, if latency exceeds 2–3s, users assume the system failed and press PTT again, causing duplicate queries.
 - Evaluate meaningful response latency, not a filler phrase such as 'Let me check'.
 - Track return usage, clarification, retries, mode changes, and user feedback as diagnostic measures.
@@ -188,7 +186,7 @@ Example: **100 users × 3 queries/day × 1 min saved = ~1,300 hrs/year** (assumi
 | Option | Interaction and processing | What do we learn? |
 |---|---|---|
 | **KISS** | PTT → cloud STT → CoVA → TTS | Can voice deliver value quickly? |
-| **Hybrid** | Local STT/TTS + CoVA over a text connection | Does reduced bandwidth help? |
+| **Hybrid** | Local STT/TTS + CoVA over a text connection | Does on-device speech — bandwidth, cost, offline tolerance — pay off? |
 | **Full-duplex** | Streaming speech-to-speech + CoVA integration | Does natural conversation help? |
 
 **Processing location** and **conversation style** are separate decisions.
@@ -204,45 +202,66 @@ Example: **100 users × 3 queries/day × 1 min saved = ~1,300 hrs/year** (assumi
 
 # Solutions: Architecture & Design 👩🏻‍🔧
 
-## Architecture: KISS / Hybrid 👩🏻‍🔧
+## Architecture: KISS (Cloud Speech) ☁️
 
 ```{mermaid}
 %%| fig-align: center
 %%{init: {'sequence': {'useMaxWidth': true, 'diagramMarginY': 4, 'messageMargin': 14, 'boxMargin': 4}}}%%
 sequenceDiagram
     actor Worker
-    participant UI as Angular Voice UI
-    participant Bridge as Voice API & Speech
+    participant UI as Angular Voice UI (PWA)
+    participant Bridge as Voice API & Speech (API GW + Lambda)
     participant CoVA as CoVA Backend
 
     Worker->>UI: PTT: Speak question
-    alt KISS: Cloud STT & TTS
-        UI->>Bridge: Stream audio chunk
-        Bridge->>Bridge: Cloud STT (Transcribe)
-    else Hybrid: On-Device STT & TTS
-        UI->>UI: Local STT (On-Device Model)
-        UI->>Bridge: Query text only
-    end
+    UI->>Bridge: Upload audio
+    Bridge->>Bridge: Cloud STT (Transcribe)
     Bridge->>CoVA: Query with user identity & permissions
     CoVA-->>Bridge: Grounded answer & references
-    alt KISS
-        Bridge->>Bridge: Cloud TTS (Polly)
-        Bridge-->>UI: Audio response + text & citations
-    else Hybrid
-        Bridge-->>UI: Text answer & citations
-        UI->>UI: Local TTS (On-Device Model)
-    end
+    Bridge->>Bridge: Cloud TTS (Polly)
+    Bridge-->>UI: Audio response + text & citations
     UI-->>Worker: Play spoken answer
 ```
 
 ::: {.notes}
-- About 2 minutes.
-- Both modes use the same CoVA .
-- The diagram is logical: API Gateway/Lambda can implement bounded turn-based requests; establish audio/request limits and use an asynchronous path if processing exceeds the chosen integration timeout.
+- About 1.5 minutes.
+- Reuses CoVA's text path; speech is the only addition.
+- AWS building blocks: PWA on S3 + CloudFront; Voice API on API Gateway + Lambda; managed speech on Amazon Transcribe and Polly.
+- Implementation note: API Gateway/Lambda can implement bounded turn-based requests; establish audio/request limits and use an asynchronous path if processing exceeds the chosen integration timeout.
 - Device credentials authenticate access, but the backend must validate the user session and enforce CoVA permissions.
 - Preserve text and source references.
 - Use service-compatible audio formats; codec selection is a measured implementation detail.
-- Hybrid needs a text connection to CoVA.
+:::
+
+## Architecture: Hybrid (On-Device Speech) 📱
+
+```{mermaid}
+%%| fig-align: center
+%%{init: {'sequence': {'useMaxWidth': true, 'diagramMarginY': 4, 'messageMargin': 14, 'boxMargin': 4}}}%%
+sequenceDiagram
+    actor Worker
+    participant UI as Angular Voice UI (PWA)
+    participant CoVA as CoVA Backend (existing API)
+
+    Worker->>UI: PTT: Speak question
+    UI->>UI: Local STT (on-device model)
+    UI->>CoVA: Query text with user identity & permissions
+    CoVA-->>UI: Grounded answer & references
+    UI->>UI: Local TTS (on-device model)
+    UI-->>Worker: Play spoken answer
+```
+
+**Difference to KISS:** speech runs on-device, only text crosses the network, and no extra voice backend is needed.
+
+::: {.notes}
+- About 1.5 minutes.
+- Same CoVA integration; only the speech runtime moves on-device.
+- No extra voice backend: the PWA calls CoVA's existing API directly — the same path CoVA's own Angular frontend uses; no AWS speech services are billed in this mode.
+- On-device TTS is an option: small neural TTS models such as Kokoro (82M params) or Piper (VITS) run in the browser via WebAssembly/WebGPU (e.g. sherpa-onnx or transformers.js), fully offline.
+- Trade-off: local TTS voice quality and language coverage are below cloud Polly, and the model bundle adds tens of MB to the PWA — benchmark before committing.
+- Local STT is a candidate to benchmark (e.g. Whisper variants via sherpa-onnx), not a settled mobile solution.
+- (Q&A prep) If runtime fallback between KISS and Hybrid is required, reintroduce a thin Voice API as the shared endpoint (one auth context, one telemetry stream); without fallback it is an unnecessary pass-through hop.
+- (Q&A prep) Newer speech-LM options such as Neuphonic's NeuTTS (Nano family, incl. a German model; GGUF/llama.cpp; instant voice cloning; watermarked output) show where local voice quality is heading. They are native-first (Python/llama.cpp), so a PWA path would need WASM/ONNX packaging — treat as a benchmark candidate, not a settled choice.
 :::
 
 ## Architecture: Full-duplex 💬
@@ -252,8 +271,8 @@ sequenceDiagram
 %%{init: {'sequence': {'useMaxWidth': true, 'diagramMarginY': 4, 'messageMargin': 14, 'boxMargin': 4}}}%%
 sequenceDiagram
     actor Worker
-    participant UI as Angular Voice UI
-    participant Relay as Session Service
+    participant UI as Angular Voice UI (PWA)
+    participant Relay as Session Service (MicroVM / Fargate)
     participant Sonic as Nova 2 Sonic
     participant CoVA as CoVA Backend
 
@@ -275,7 +294,7 @@ sequenceDiagram
 - Interruption handling: Nova Sonic natively handles interruptions. When the worker speaks while audio is playing, new audio events sent via WebSocket trigger an interruption event from Sonic back to the Session Service, causing the UI to immediately cancel audio playback.
 - Full-duplex adds a conversational model around CoVA.
 - Configure information requests to use CoVA and evaluate whether Sonic faithfully preserves tool results, especially numbers, units, and instructions.
-- The session service is persistent compute, not an ordinary Lambda invocation per audio chunk.
+- The session service is persistent compute, not an ordinary Lambda invocation per audio chunk. Hosting candidates are Lambda MicroVMs or ECS/Fargate behind a WebSocket endpoint (see Deployment); Nova 2 Sonic is consumed via Bedrock.
 :::
 
 ## Trade-offs: Make it fit the Environment ⚖️ {.smaller}
@@ -324,7 +343,7 @@ sequenceDiagram
 - About 1 minute.
 - Hardware is part of the solution, not an accessory.
 - What does "intelligible" mean here? Audible ≠ intelligible. High plant noise combined with hearing protection (earplugs/ear defenders attenuating 25–30 dB) turns soft consonants into muffled sound. If CoVA says "fifteen" and the worker hears "fifty", or confuses "sulfate" with "sulfite", it creates severe safety hazards. Intelligible speech requires dynamic range compression, EQ peaking in the speech clarity band (1–3 kHz), and deliberate pacing.
-- A headset's PTT button may not be exposed to browser code; validate Bluetooth controls, browser lifecycle, microphone permissions, and background behavior. If the PWA cannot support the required hardware interaction, assess a native bridge.
+- A headset's PTT button may not be exposed to browser code; validate Bluetooth controls, browser lifecycle, microphone permissions, and background behavior. If the PWA cannot support the required hardware interaction, move that persona to a native app rather than forcing the web stack.
 :::
 
 ## Connectivity: Weak Is Not Offline 📶
@@ -360,7 +379,7 @@ sequenceDiagram
 - **AWS ECS / Fargate:** Shared container pool behind an ALB (ideal for production scale with high, sustained concurrency).
 
 ::: {.notes}
-- About 2 minutes.
+- About 1.5 minutes.
 - Propose testing MicroVMs first for the intermittent pilot, subject to region availability and IaC support, rather than asserting they are faster or cheaper. These are distinct from ordinary Lambda functions. A backend session broker authenticates the user, launches a MicroVM, and returns its endpoint plus a short-lived port-scoped JWE token. Browser WebSockets can pass MicroVM authentication via subprotocols [3]. That token grants endpoint access, not CoVA permissions. MicroVMs have an eight-hour maximum lifespan including suspension, no load balancing between their dedicated endpoints, and snapshot/storage charges while suspended [4]. Keep them running during active audio; resume hooks must refresh credentials and reconnect to Bedrock. Sonic has a separate eight-minute connection limit and renewal pattern [5].
 - Fargate may be more efficient when many sessions share warm tasks. Compare full session-ready latency, concurrent session capacity, recovery, and cost per successful task. Ordinary Lambda response streaming is not itself a bidirectional WebSocket server; API Gateway WebSocket integrations retain their own limits [6].
 - Deploy to staging, run regression evaluation, then use feature flags/canary cohorts with a quick rollback path. Use GitHub OIDC for deployment credentials.
@@ -381,6 +400,7 @@ sequenceDiagram
 - About 2 minutes.
 - Recruit representative users with operations, domain experts, and relevant local stakeholders.
 - Start with a permitted environment and a bounded use case, not an arbitrary headcount.
+- The expansion phase is the client decision gate: stay on the PWA where screens are active; plan a native track where PTT hardware, background use, or on-device speech demand it.
 - Give users a short onboarding session and a clear feedback/support route.
 :::
 
@@ -405,7 +425,7 @@ sequenceDiagram
 ## Limitations 🧐
 
 - **No connectivity**: No (live) CoVA answer.
-- EX-certified equipment is costly
+- EX-certified equipment is costly.
 - Some environments may **never** support an approved, usable voice setup.
 - English-first validates the technology, **not** global adoption.
 
@@ -439,11 +459,12 @@ Thank you 🙏🏻
 Likely questions & panel challenges:
 
 - Why Nova 2 Sonic vs. OpenAI Realtime / Gemini Live? Data residency, existing AWS CDK stack, IAM perimeter, and enterprise Bedrock tenant. Keeps data strictly inside Covestro. The session relay architecture isolates the model provider—if Sonic underperforms, we can swap backends without frontend changes.
-- PWA vs. Native Mobile with hardware PTT buttons? Web Bluetooth/Audio has limits when backgrounded or locked. Lab pilot uses active screens. For pocketed plant phones, bench testing will determine if a lightweight native wrapper (Capacitor/Kotlin) is needed for background hardware PTT hooks.
+- PWA vs. Native Mobile? PWA first: it reuses CoVA's stack and validates voice-to-CoVA fastest; the lab pilot uses active screens. Native is the planned expansion path where PWA limits bite — hardware PTT (Web Bluetooth absent on iOS), locked-screen/background capture, reliable local model caching — with MDM distribution removing store friction. Agents lower the native code cost, but the two-platform validation matrix is the real price; let evidence gate that investment.
 - RAG tool latency in full-duplex (Sonic waiting for CoVA)? Sonic supports conversational prosody, but artificial filler phrases annoy operators. The session service sends an audible earcon/status cue so the user knows CoVA is retrieving verified facts, avoiding ungrounded speech.
 - High EX headset costs vs. small pilot scale? In chemical operations, ROI is driven by avoiding unplanned downtime (€50k–€100k+ per stoppage) and compliance errors, not typing speed. Preventing one incident pays for the program.
 - Authentication without typing? Reuse CoVA/Entra sign-in on managed devices, within session policy. MDM alone does not authenticate a person. A MicroVM token is a separate endpoint credential.
 - Why not local STT everywhere? Benchmark it; feasibility, duty-cycle battery use, jargon, and supported device runtimes determine whether it wins.
+- On-device TTS quality vs. Polly? Kokoro/Piper are below cloud voice quality; A/B them in the pilot rather than assume hybrid wins. Neuphonic's NeuTTS [7] shows rapid improvement (LM+codec architecture, GGUF, real-time on mid-range phones) and even has a German Nano model — relevant for the English-first limitation — but it is native-first (Python/llama.cpp); a PWA path would require WASM/ONNX packaging. Its voice-cloning capability is a worker-council/compliance question, not a technical detail.
 - Why MicroVMs? Dedicated WebSocket ingress and on-demand lifecycle are useful for intermittent sessions. Compare with pooled Fargate capacity; do not assume lower cost or latency.
 - What happens after a connection drop? Show status, cancel stale turns, reconnect and renew the Sonic stream, and restore context explicitly. Do not silently replay a question.
 - What if the answer is wrong? Keep CoVA's grounding and authorization, confirm ambiguous entities, and evaluate spoken output separately. Grounding is not a guarantee against hallucination.
@@ -452,10 +473,11 @@ Likely questions & panel challenges:
 
 Sources for technical claims:
 
-1: AWS Nova 2 Sonic TypeScript example: https://github.com/aws-samples/amazon-nova-samples/tree/main/speech-to-speech/amazon-nova-2-sonic/sample-codes/websocket-nodejs
+1. AWS Nova 2 Sonic TypeScript example: https://github.com/aws-samples/amazon-nova-samples/tree/main/speech-to-speech/amazon-nova-2-sonic/sample-codes/websocket-nodejs
 2. Amazon Transcribe custom vocabularies: https://docs.aws.amazon.com/transcribe/latest/dg/custom-vocabulary.html
 3. Lambda MicroVM networking: https://docs.aws.amazon.com/lambda/latest/dg/microvms-networking.html
 4. Lambda MicroVM lifecycle: https://docs.aws.amazon.com/lambda/latest/dg/microvms-launching.html
 5. Nova 2 Sonic capabilities and connection limit: https://docs.aws.amazon.com/nova/latest/nova2-userguide/using-conversational-speech.html
 6. API Gateway WebSocket integration limits: https://docs.aws.amazon.com/apigateway/latest/developerguide/apigateway-execution-service-websocket-limits-table.html
+7. NeuTTS on-device TTS models: https://github.com/neuphonic/neutts
 :::
