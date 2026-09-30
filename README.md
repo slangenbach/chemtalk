@@ -1,11 +1,11 @@
 # Chemtalk
 
-A case study about talking to AI agents in constrained environments.
+A case study about talking with AI agents in constrained industrial environments.
 
 ## Prerequisites
 
 - [Quarto][1]
-- Your favorite coding agent, e.g. [Pi Coding Agent][2]
+- Your favorite agent harness, e.g. [OpenCode][2]
 - [OpenRouter][3] account
 
 ## Usage
@@ -14,5 +14,5 @@ Instruct the agent to read the [case study](case_study.md), consider the [contex
 
 
 [1]: https://quarto.org/
-[2]: https://pi.dev/
+[2]: https://opencode.ai/
 [3]: https://openrouter.ai/

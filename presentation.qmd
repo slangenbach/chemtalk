@@ -1,6 +1,6 @@
 ---
 title: "Talking with AI in constrained industrial environments 👩🏻‍🔬💬🤖"
-subtitle: "Case study for Senior AI engineer at Covestro"
+subtitle: "Case study for Senior AI Engineer at Covestro"
 author: "Stefan Langenbach"
 date: "2026-10-01"
 format:
@@ -9,332 +9,402 @@ format:
     slide-number: true
     hash-type: number
     transition: slide
+    slide-level: 2
+    width: 1200
+    height: 800
+    mermaid:
+      theme: neutral
+    include-in-header:
+      text: |
+        <style>
+        .reveal .mermaid svg {
+          max-height: 610px;
+          max-width: 100%;
+          width: auto !important;
+          height: auto !important;
+        }
+        .reveal .cell-output-display {
+          text-align: center;
+        }
+        </style>
 ---
 
-# Agenda 📋 {.smaller}
+## Reality Check 💁🏻‍♂️
 
-1. Problem Statement
-1. Approach
-1. Assumptions
-1. Solution Design
-1. Deployment & Rollout
-1. Limitations
-1. Recommendation
-1. Q&A
+> The future is already here. It's just not evenly distributed - William Gibson
 
-::: {.notes}
-- Approach: Vision, Options, KPIs and Business Value
-- Solution Design: Architecture, Trade-offs, Chemical Jargon, Noise & PPE
-:::
-
-# Problem Statement 🤔
-
-## Reality Check
-
-> The future is already here. It's just not evenly distributed 💁🏻‍♂️
+How is voice mode working today?
 
 ::: {.incremental}
-- Office workers: ✅ (think ChatGPT voice mode)
-- Drivers: ✅ (same, given sufficient mobile connection)
-- Lab technicians: ⚠️ (PPE, limited connectivity, sterile protocols)
-- Plant workers: ❌ (EX restrictions, noisy environment, PPE, limited connectivity)
+- **Office workers:** Easy access — think ChatGPT voice mode 👩🏻‍💼
+- **Drivers:** Conditional — connectivity, attention, and company rules 🚗
+- **Lab technicians:** Constrained — gloves, PPE, and protocols 👨🏻‍🔬
+- **Plant workers:** Highly constrained — noise, EX restrictions, and connectivity 👷🏻‍♀️
 :::
 
 ::: {.notes}
-- tbd
+About 1 minute. The technology exists, but access varies by working environment. These are interaction constraints, not a verdict that voice is impossible on a plant floor. Transition: what would it take to make the existing assistant accessible here?
 :::
 
-## Status Quo
+## Agenda 📋
 
-- CoVA already serves office 👩🏻‍💼 workers well via traditional chat interface
-- Commercially available voice assistant solutions could be integrated into CoVA (and work for drivers 🚗)
-- But lab technicians 👨🏻‍🔬 and plant operators 👷🏻‍♀️ are operating in much more **constrained** environments
-
-## The Real Challenge
-
-Create voice interface**s**, which lets different users group (drivers, lab technicians, plant operators), interact with CoVA **hands-free**, **safely**, and **reliably** in their respective environments.
+1. Executive Summary
+2. Problem Statement & Assumptions
+3. Approach: Vision, Value & Options
+4. Solutions: Architecture & Design
+5. Deployment, Rollout & Monitoring
+6. Limitations & Recommendation
+7. Q&A
 
 ::: {.notes}
-- Mind the bold **s** in interfaces
+About 30 seconds. The presentation moves from the decision to its business and engineering rationale, then to the path to production.
 :::
 
-# Approach 🛠
+# Executive Summary 🎯
 
-## Vision
+> **One CoVA, different voice experiences — matched to the users working environment.**
 
-> What do we want to achieve?
-
-A worker in a constrained environment presses a button, speaks a question, and hears an accurate answer quickly — **without** removing PPE or stopping their task.
+- **Start simple:** Extend CoVA with turn-based voice interaction.
+- **Test where it gets difficult:** Jargon, noise, PPE, and connectivity.
+- **Compare deliberately:** Hybrid and full-duplex where they improve task completion.
 
 ::: {.notes}
-- tbd
+About 1 minute. Recommend a baseline first, then compare alternatives using the same tasks. Reuse CoVA's knowledge and permissions. We are proposing a validation programme, not assuming a single voice experience suits every role.
 :::
 
-## Options
+# Problem Statement & Assumptions 🤔💭
 
-> How do we get there?
+## What is the real challenge? 🤔
 
-1. **KISS**: Use on-device STT (speech-to-text) and TTS (text-to-speech) for a simple proof-of-concept
-1. **Hybrid**: Use cloud STT/TTS and fall back to on-device STT/TTS when connectivity is poor
-1. **Full-duplex**: Use a bidirectional streaming API to send audio directly to the cloud (~ ChatGPT voice mode)
+> Enable deskless workers to interact with CoVA **safely**, **reliably**, and **hands-free** in constrained environments.
 
-Start with existing mobile devices where possible to gain experience and move to EX-certified equipment when required
+- **Status quo:** CoVA serves office staff well via text chat.
+- **Problem:** Plant operators, lab techs, and drivers must stop work, defer questions, or skip queries entirely.
+- **Goal:** Build robust voice interface**s** tailored to each environment's physical and technical constraints.
 
 ::: {.notes}
- - We need to carefully review this slide
+About 1.5 minutes. **Emphasize the plural in interfaces**. Hands-free is the goal; a glove-compatible PTT control may be the practical first step. The case study requires spoken input and spoken or readable answers with conversational latency. The scope is access to the existing assistant, not replacing its backend or adding autonomous plant control.
 :::
 
-## KPIs
-
-> How do we know that we are on track?
-
-- Usage in constrained environments vs office
-- End-to-end latency
-- Domain word-error rate (chemical jargon)
-- Fallback rate (to on-device processing)
-- **NPS:** Quarterly survey
-
-::: {.notes}
-- Suggest real KPIs here, not just "we will measure usage"
-:::
-
-## Business Value
-
-> How we measure success?
-
-- **Adoption:**  Percentage of eligible active users per week
-- **Retention:**  Percentage of users with >3 sessions/week after 30 days
-- **Operational impact:** MTTR reduction (hours) and first-time-fix rate improvement
-- **Safety signal:** Count of safety-critical queries resolved via voice vs. delayed
-
-::: {.notes}
-- Shouldn't we move adoption and retention to the KPI slide?
-- Repair time is a good lever, what else can you think of?
-:::
-
-# Assumptions 💭
-
-## Managing Expectations {.smaller}
+## Managing Expectations 💭
 
 :::: {.columns}
-
 ::: {.column width="50%"}
 **Assumptions**
 
-- We have buy-in from all major stakeholders (IT, Safety, Plant Operations, Workers Council, etc.) to run a pilot
-- Our solution integrates with the existing CoVA backend (auth, text input/output, history, access to external knowledge, guardrails, etc.)
-- We can build on an AWS-native stack (Bedrock, Lambda, API Gateway, CDK, etc.) using TypeScript
-- English is considered the initial target language
-- Company managed mobile phones are available to all pilot users
-- Budget to purchase EX-certified equipment (c.f. 3M Peltor) is available
+- CoVA provides identity, permissions, knowledge access, and text responses.
+- We use the **Angular / TypeScript / AWS** \as the fundament.
+- **English first**, using company-managed pilot devices.
+- Stakeholder support and budget for a representative pilot exist.
 :::
-
 ::: {.column width="50%"}
 **Constraints**
 
-- Many plants require EX-certified devices; mobile phone usage may be restricted
-- Plant noise, reverberation, and PPE degrade audio quality
-- Internet connectivity in labs and plants may be limited or non-existent
-- Safety rules and data privacy considerations likely prohibit always-listening *wake word* activation (*Hey, CoVA...*)
+- Device use and EX requirements vary by area.
+- Noise and PPE affect speaking **and hearing**.
+- Connectivity ranges from good to **absent**.
+- Activation must work with the user's task and equipment.
 :::
-
 ::::
 
 ::: {.notes}
-- No need to re-invent the wheel
-- Note to self: What about the Angular frontend? Can it easily be extended to support voice mode?
-- Consider adapting the title
+About 1.5 minutes. Assumptions come from context.md; pilot support and equipment budget need validation. Confirm the CoVA integration contract rather than assuming an existing public REST API. English is a technical starting point, not evidence of suitability for local-language users. Use explicit PTT/session activation initially; full-duplex does not require an always-listening wake word.
 :::
 
-# Solution Design 👩🏻‍🔧
+# Approach: Vision, Value & Options 🛠💰
 
-## Options
+## Vision: What do we want to achieve? 🛠
 
-1. KISS
-1. Hybrid
-1. Full-duplex
+A worker speaks a question and hears a useful answer quickly — **without removing PPE or reaching for a keyboard**, when the task permits it.
 
-## Architecture (KISS & Hybrid)
+**Short answers. Clear recording status. Easy repeat and stop.**
 
-```text
-┌─────────────┐   Audio (Opus)   ┌──────────────┐   Text   ┌──────────────┐
-│  MDM Phone  │ ───────────────> │  API GW      │ ───────> │  CoVA Text   │
-│  + Headset  │ <─────────────── │  (WebSocket) │ <─────── │  API (REST)  │
-└─────────────┘   Audio (PCM)    └──────────────┘  Answer  └──────────────┘
-                                        │
-                                        v
-                              ┌───────────────────┐
-                              │  AWS Bedrock      │
-                              │  Nova Sonic (STT) │
-                              │  Nova Sonic (TTS) │
-                              └───────────────────┘
+::: {.notes}
+About 1 minute. Useful means understandable, relevant, and usable in the current task.
+
+Why "when the task permits it"? Safety always takes precedence. Voice assistance is designed for inspection rounds, troubleshooting, and lab reference lookup—never for distracting an operator during safety-critical, high-focus chemical handling or active valve transfers.
+
+A spoken wall of text is not a good voice interface; offer a short answer followed by more detail on request, with references available on screen.
+:::
+
+## Business Value: Where Does Voice Help? 💰 {.smaller}
+
+| Persona | Potential use case | Value to measure |
+|---|---|---|
+| **Lab technician** | Retrieve a method or reference | Fewer trips to a terminal; faster lookup |
+| **Maintenance technician** | Retrieve troubleshooting knowledge | Less interruption; faster access to context |
+| **Driver** | Continue working on tasks when not in front of the computer | Access when typing is impractical |
+
+Prioritize by **frequency × friction removed × feasibility * value generated**.
+
+::: {.notes}
+About 1.5 minutes. Choose a frequent, bounded information-retrieval task with usable source material and permitted device use. Do not assume all labs have lower barriers than all plant areas. Observe users and establish the current workflow before selecting the pilot. Drivers need a different activation and attention model; do not ask them to operate a phone PTT button while driving. Buy speech capabilities and approved equipment; build the CoVA integration and environment-specific UX.
+:::
+
+## Business Value: Make It Measurable 📐
+
+> What improves when the **same CoVA** becomes accessible by voice?
+
+**100 users × 3 queries/day × 1 min saved = ~1,100 hrs/year**
+
+- **Direct benefit:** Hands-busy lookup without stopping tasks or walking to terminals.
+- **Strategic lever:** Faster anomaly resolution avoids costly line stoppages.
+- **Validation gate:** Measure actual time saved vs. baseline workflow before expanding.
+
+::: {.notes}
+About 1.5 minutes. This is an illustrative calculation, not a Covestro forecast. Validate successful usage, baseline time, and net time saved including retries. Capacity released is not automatically cash savings. Subtract implementation, equipment, speech/model inference, hosting, and support costs when assessing economics. MTTR and first-time-fix rate are downstream measures for maintenance expansion, not universal KPIs or benefits attributable to voice without evidence. Avoid transferring vendor AI-maintenance benchmarks to this interface.
+:::
+
+## KPIs: Are We on Track? 📊 {.smaller}
+
+| Measure | Definition |
+|---|---|
+| **Adoption** | Weekly active users / eligible pilot users |
+| **Task success** | Usable information without switching channel |
+| **Latency** | p50/p95: end of speech → first useful spoken response |
+| **Domain accuracy** | Correct chemicals, equipment IDs, numbers, and units |
+| **Business impact** | Task time compared with the baseline workflow |
+
+**Proposed pilot latency target:** p95 ≤ 3 seconds in agreed test conditions.
+
+::: {.notes}
+About 2 minutes. Target is a hypothesis to agree with users, not an industry benchmark.
+
+Latency budget justification (p95 ≤ 3s):
+- Human conversational psychology: If latency exceeds 2–3s, users assume the system failed and press PTT again, causing duplicate queries.
+- Component breakdown: Network uplink/downlink (200-400ms) + STT finalization (300-600ms) + CoVA RAG & LLM response (1200-1800ms) + TTS audio chunk synthesis (200-400ms) = ~1.9s to 3.2s. Median (p50) sits ~2s; p95 under 3s keeps user trust high.
+
+Evaluate meaningful response latency, not a filler phrase such as 'Let me check'. For full-duplex, annotate utterance end consistently and measure interruption-to-playback-stop separately. Track return usage, clarification, retries, mode changes, and user feedback as diagnostic measures. Domain accuracy should use an expert-labelled test set; overall WER alone hides important entity errors. Define task-specific quality gates with domain experts before field expansion; do not invent a universal accuracy threshold.
+:::
+
+## Options: How Do We Get There? 🔀 {.smaller}
+
+| Option | Interaction and processing | What do we learn? |
+|---|---|---|
+| **KISS** | PTT → cloud STT → CoVA → TTS | Can voice deliver value quickly? |
+| **Hybrid** | Local STT/TTS + CoVA over a text connection | Does reduced bandwidth help? |
+| **Full-duplex** | Streaming speech-to-speech + CoVA integration | Does natural conversation help? |
+
+**Processing location** and **conversation style** are separate decisions.
+
+::: {.notes}
+About 2 minutes. STT means speech-to-text; TTS means text-to-speech; PTT means push-to-talk. Cloud Transcribe/Polly are the turn-based baseline candidates. Local models such as Whisper are candidates to benchmark, not a settled mobile solution. Nova 2 Sonic is the full-duplex candidate. Hybrid can be an environment-specific mode rather than an automatic fallback on every latency spike. Compare on identical tasks and devices.
+:::
+
+# Solutions: Architecture & Design 👩🏻‍🔧
+
+## Architecture: KISS / Hybrid 👩🏻‍🔧
+
+```{mermaid}
+%%| fig-align: center
+%%{init: {'sequence': {'useMaxWidth': true, 'diagramMarginY': 4, 'messageMargin': 14, 'boxMargin': 4}}}%%
+sequenceDiagram
+    actor Worker
+    participant UI as Angular Voice UI
+    participant Bridge as Voice API & Speech
+    participant CoVA as CoVA Backend
+
+    Worker->>UI: PTT: Speak question
+    alt KISS: Cloud STT & TTS
+        UI->>Bridge: Stream audio chunk
+        Bridge->>Bridge: Cloud STT (Transcribe)
+    else Hybrid: On-Device STT & TTS
+        UI->>UI: Local STT (On-Device Model)
+        UI->>Bridge: Query text only
+    end
+    Bridge->>CoVA: Query with user identity & permissions
+    CoVA-->>Bridge: Grounded answer & references
+    alt KISS
+        Bridge->>Bridge: Cloud TTS (Polly)
+        Bridge-->>UI: Audio response + text & citations
+    else Hybrid
+        Bridge-->>UI: Text answer & citations
+        UI->>UI: Local TTS (On-Device Model)
+    end
+    UI-->>Worker: Play spoken answer
 ```
 
-- **Fallback path:** If WebSocket latency > 2s or connection drops, client falls back to on-device Whisper STT + text display.
-- **Full-duplex path:** A separate `/voice/stream` WebSocket endpoint will stream audio directly to Nova Sonic's bidirectional speech-to-speech API, bypassing discrete STT/TTS steps for a truly conversational experience.
-
 ::: {.notes}
-The architecture is intentionally simple. WebSockets via API Gateway are a natural fit for streaming audio. Opus encoding reduces bandwidth. The fallback path is crucial—this is where many voice projects fail in industrial settings. I explicitly mention on-device Whisper, which is a 80MB model that runs fine on modern phones.
-- Transform
+About 2 minutes. Both modes use the same CoVA answer and permissions. The diagram is logical: API Gateway/Lambda can implement bounded turn-based requests; establish audio/request limits and use an asynchronous path if processing exceeds the chosen integration timeout. Device credentials authenticate access, but the backend must validate the user session and enforce CoVA permissions. Preserve text and source references. Use service-compatible audio formats; codec selection is a measured implementation detail. Hybrid needs a text connection to CoVA.
 :::
 
-## Architecture (Full-duplex)
+## Architecture: Full-duplex 💬
 
-tbd
+```{mermaid}
+%%| fig-align: center
+%%{init: {'sequence': {'useMaxWidth': true, 'diagramMarginY': 4, 'messageMargin': 14, 'boxMargin': 4}}}%%
+sequenceDiagram
+    actor Worker
+    participant UI as Angular Voice UI
+    participant Relay as Session Service
+    participant Sonic as Nova 2 Sonic
+    participant CoVA as CoVA Backend
 
-Build on [sample code](https://github.com/aws-samples/amazon-nova-samples/tree/main/speech-to-speech/amazon-nova-2-sonic/sample-codes/websocket-nodejs) from AWS using `InvokeModelWithBidirectionalStream` API for bidirectional streaming. The `/voice/stream` endpoint will handle both audio input and output in a single WebSocket connection, reducing latency and improving conversational flow.
-
-## Trade offs
-
-> Why not go on-device STT for everything?
-
-| Factor | Cloud STT (Nova Sonic) | On-Device STT (Whisper) |
-|--------|------------------------|-------------------------|
-| **Chemical jargon accuracy** | High — contextual biasing with dynamic 500-term vocabulary | Lower — base/tiny model; hard to update domain vocab without app redeploy |
-| **Battery impact** | Minimal — only audio encoding on device | High — continuous CPU/GPU inference for 8h shifts |
-| **Model updates** | Instant — cloud deployment | Requires MDM/app store rollout to 1,000+ devices |
-| **Multi-language** | Seamless — Nova Sonic supports EN, DE, ES natively | Needs separate model files or larger multilingual download |
-| **Connectivity requirement** | Needs stable connection | Works offline or on poor connectivity |
-
-**Verdict:** Cloud-primary for accuracy and battery; on-device Whisper as the **dead-zone fallback**.
-**Zone-aware deployment:** In high-connectivity zones (labs, offices), cloud STT is primary. In low-connectivity plant floors, we can A/B test flipping to **on-device-primary** where battery trade-offs are acceptable.
-
-::: {.notes}
-This is the slide that shows deep engineering judgment. You are explicitly comparing three architectural options and defending your choice with data — while being honest about what you got wrong.
-
-Key rebuttals to memorize:
-- **On-device STT for everything?** Wrong for this use case. Whisper tiny/base has WER ~15-20% on technical jargon vs. cloud contextual-biased models at <5%. In a chemical plant, "toluene diisocyanate" misheard as "toluene isocyanate" is a safety risk. Cloud contextual biasing fixes this instantly.
-- **NVIDIA Parakeet?** It IS deployable on mobile — iOS via CoreML (sebastian-software/parakeet-coreml) and Android via ONNX Runtime (soniqo.audio/guides/parakeet/android, mpnikhil/parakeet-voice-android). But it's a 0.6B parameter transducer with no language forcing, which is a safety issue in German plants. Also larger and newer ecosystem. We keep it as an A/B test candidate, not the Phase 1 default.
-- **Why did you initially say Parakeet doesn't work on mobile?** Because I conflated "CUDA-native training" with "deployment target." Correcting yourself in the interview when presented with new data shows intellectual honesty — a senior trait.
-- **Zone-aware?** This shows you don't cargo-cult one architecture. Labs get cloud STT for accuracy. Plant floors get on-device fallback for survival. We measure and adapt via A/B telemetry.
-:::
-
-## Dealing with Chemical Jargon
-
-- Build **custom vocabulary**, consisting of domain-specific terms, variations and Covestro jargon, which is constantly updated and refined
-- Use **contextual grounding** to improve accuracy (CoVA already has access to company internal knowledge)
-- **Human-in-the-loop fallback:** If confidence < 0.85, prompt user to confirm via PTT ("Did you mean TDI?")
+    Worker->>UI: Start session & speak
+    UI->>Relay: Stream audio (WebSocket)
+    Relay->>Sonic: Bidirectional audio stream
+    Sonic->>Relay: Tool call: Query CoVA
+    Relay->>CoVA: Query with user identity & permissions
+    CoVA-->>Relay: Grounded knowledge response
+    Relay->>Sonic: Return tool result
+    Sonic-->>Relay: Stream synthesized answer audio + text
+    Relay-->>UI: Forward audio stream & citations
+    UI-->>Worker: Play spoken answer in real time
+```
 
 ::: {.notes}
-Chemical jargon is a known failure mode for generic models. I propose a measurable mitigation (WER on a domain test set) which shows engineering rigor. The human-in-the-loop idea respects safety—it's better to ask once than to give the wrong SOP.
+About 2 minutes. Use `InvokeModelWithBidirectionalStream` and adapt the AWS TypeScript sample [1].
+
+Interruption handling (explain verbally): Nova Sonic natively handles interruptions. When the worker speaks while audio is playing, new audio events sent via WebSocket trigger an interruption event from Sonic back to the Session Service, causing the UI to immediately cancel audio playback.
+
+Full-duplex adds a conversational model around CoVA. Configure information requests to use CoVA and evaluate whether Sonic faithfully preserves tool results, especially numbers, units, and instructions. Do not assume a prompt guarantees this. Keep acknowledgements distinct from substantive answers; require the tool result before answering a company-knowledge question. The session service is persistent compute, not an ordinary Lambda invocation per audio chunk. Hosting is a separate decision on the Deployment slide.
 :::
 
-## Handling Noise & PPE
+## Trade-offs: Make it fit the Environment ⚖️ {.smaller}
 
-- **Audio Input** Directional microphone with noise suppression
-- **Push-to-Talk (PTT)** button on headset
-- **Over-ear or in-ear headset** for use with/under helmets and with/without ear protection
-- **Optional text transcription** displayed on phone screen
+| Factor | KISS | Hybrid | Full-duplex |
+|---|---|---|---|
+| **Integration** | Reuse CoVA text path | Add local speech runtime | Add streaming and tool bridge |
+| **Network** | Audio upload/download | Mostly text | Continuous audio stream |
+| **Device load** | Capture and playback | Plus local inference | Capture and playback |
+| **Conversation** | Explicit turns | Explicit turns | Turn-taking and interruption |
+
+**Accuracy, latency, battery, and cost: benchmark rather than assume.**
 
 ::: {.notes}
-- tbd
+About 1 minute. Local STT is not inherently less accurate, and cloud STT is not automatically best for chemical jargon. Results depend on model, vocabulary support, microphone, accent, and noise. Local battery cost depends on actual duty cycle, not continuous inference for an entire shift. Local model distribution can be separate from app updates. Compare candidate runtimes on the supported Android/iOS devices before choosing one.
 :::
 
-# Deployment, Rollout & Observability 👷🏻
+## Dealing with Chemical Jargon 🧪
 
-## Deployment
-
-- Deploy AWS services (models on Bedrock, Lambda, API Gateway, CloudFront, etc.) and logic via **AWS CDK** within GitHub Actions CI/CD pipeline
-- Use **canary deployment** to gradually roll out to pilot users
-
-- - CloudWatch dashboards for latency, error rates, connection drops
-**Feedback Loop:**
-- Weekly synthesis of failed queries to feed into RAG/grounding improvements
+- **Curated test set:** Chemical formulas, trade names, equipment IDs, and units.
+- **Custom vocabulary:** Domain biasing on STT where supported (e.g. Transcribe).
+- **Knowledge grounding:** CoVA RAG context to disambiguate terms and prevent hallucinations.
+- **Audio verification:** Validate phonetic clarity and fidelity of synthesized answers.
 
 ::: {.notes}
-- API Gateway and Lambda for streaming, S3 for short-term audio logging, CloudFront for PWA delivery
-This shows you can operate within their existing stack. The use of WebSocket API Gateway + Lambda is a standard AWS pattern for streaming. Mentioning S3 with a TTL is important—voice data is sensitive, and you don't want to store it forever even if privacy is "limited importance." The canary deployment is critical for safety-critical environments.
+About 1 minute. Recognition and knowledge grounding solve different problems: retrieving the right document cannot reliably fix an incorrectly recognized chemical name. Amazon Transcribe supports custom vocabularies [2]; do not claim the same API exists for Sonic. Use recordings with representative accents, noise, and PPE, plus held-out evaluation data. Confidence-based confirmation is an option only where appropriate scores are exposed and calibrated. A universal 0.85 threshold is not justified. Evaluate whether spoken acronyms, decimal values, and units are understandable to listeners.
 :::
 
-## Rollout
+## Handling Noise & PPE 🎧
 
-**Pilot phase**
-- **Who:** 50 lab technicians at HQ (controlled environment, lower safety barriers)
-- **What:** Hybrid STT+TTS, English only, PTT button on standard MDM phone
-- **Goal:** Validate jargon accuracy, latency, and UI flow; collect 500+ real queries
-
-**Expansion:**
-- **Who:** 250 plant maintenance and operations staff (supervised areas, non-EX zones)
-- **What:** Add rugged Bluetooth headsets; introduce text fallback; measure MTTR impact
-- **Goal:** Test noise robustness, connectivity fallback, and operational KPIs
-
-**Production:**
-- **Who:** 1,000 workers across plants, where EX-certified devices are approved
-- **What:** Integrate with approved wearables; geo-fenced activation in safe zones only; CMMS integration for first-time-fix tracking
+- **Input:** Suitable microphone and noise suppression.
+- **Output:** Intelligible speech with required hearing protection.
+- **Controls:** Glove-compatible activation, repeat/stop, clear recording status.
+- **Validation:** Actual phone + headset + PPE, during representative tasks.
 
 ::: {.notes}
-The rollout is deliberately cautious. Chemical companies have long safety-validation cycles. Starting in the lab is smart—lab techs have pain points but lower risk. The geo-fenced activation is a pragmatic safety control: voice mode auto-enables only in designated safe zones, not near volatile processing units.
+About 1 minute. Hardware is part of the solution, not an accessory.
+
+What does "intelligible" mean here? Audible ≠ intelligible. High plant noise combined with hearing protection (earplugs/ear defenders attenuating 25–30 dB) turns soft consonants into muffled sound. If CoVA says "fifteen" and the worker hears "fifty", or confuses "sulfate" with "sulfite", it creates severe safety hazards. Intelligible speech requires dynamic range compression, EQ peaking in the speech clarity band (1–3 kHz), and deliberate pacing.
+
+Test intelligibility without compromising awareness of alarms or colleagues. A headset's PTT button may not be exposed to browser code; validate Bluetooth controls, browser lifecycle, microphone permissions, and background behavior. If the PWA cannot support the required hardware interaction, assess a native bridge. Equipment approval applies to the complete phone/headset/accessory setup in the target zone, not just an EX-labelled headset. Start with existing devices where permitted.
 :::
 
-# Limitations 🧐 {.smaller}
+## Connectivity: Weak Is Not Offline 📶
 
-**Technical:**
+- **Good connection:** Test cloud speech and full-duplex.
+- **Low bandwidth:** Local STT/TTS may keep text-based access usable.
+- **No connection:** Clearly indicate that live CoVA is unavailable.
 
-- Limited connectivity in some areas may prevent full-duplex streaming and cloud STT/TTS from working reliably
-- On-device fallback has lower accuracy on domain jargon - safety-critical queries should trigger confirmation prompts when fallback is active
-- Full-duplex models (AWS Nova Sonic) are relatively new and not yet battle tested in constrained environments
-
-**Operational:**
-
-- EX-certified equipment is expensive
-- Battery life may not support 8-hour shifts
-- Some environments may ban voice-enabled devices outright due to safety concerns
-
-**Privacy:**
-
-- Voice data is biometric; even if "privacy is limited," GDPR may still require retention limits and consent
+**Change modes explicitly. Avoid silently losing or replaying a question.**
 
 ::: {.notes}
-- tbd
+About 1 minute. Measure connection setup, packet loss, drops, and reconnection, not just bandwidth. A fallback based on one two-second delay is too simplistic; use observed network behavior and visible user control. Cancel stale requests and prevent duplicate turns after retry. Text display is an option only when eyes and equipment permit it. A limited cache of approved information would be a separate versioned capability; local STT alone does not provide offline knowledge access. Geolocation may suggest a mode but is not proof of device permission and should not automatically start recording.
 :::
 
-# Business Value 💰
+# Deployment, Rollout & Monitoring 🚀👷🏻
 
-> To be moved to other slide
+## Deployment: Build on the Existing Stack 🚀 {.smaller}
 
-**We don't just save time—we reduce unplanned downtime and maintenance cost.**
+- **Frontend:** Angular voice UI / PWA, delivered via S3 + CloudFront.
+- **Turn-based API:** API Gateway + Lambda; Transcribe/Polly and CoVA.
+- **Full-duplex:** Persistent TypeScript-based voice session service; AWS Nova 2 Sonic via Bedrock.
+- **Delivery:** AWS CDK + GitHub Actions; pilot feature flags and rollback.
 
-**Quantitative (annual impact, 1,000 active voice users):**
-- **Mean Time To Repair (MTTR):** External benchmark: iMaintain's AI chat workflows **cut MTTR by 50%** at a manufacturing plant (4h → 2h), saving **£120,000 per quarter** in downtime costs plus **40% fewer repeat failures**. Voice is even faster than typing.
-  - *Covestro estimate:* 1,000 workers × 2 maintenance events/week × 20 min saved = **~1,300 hours/week recovered**
-- **First-Time-Fix Rate:** Technicians arrive with full context via voice, reducing repeat dispatches. Benchmark data shows **+10–40%** improvement possible.
-- **Unplanned Downtime:** Plant operators resolve anomalies in minutes rather than hours. A single avoided unplanned stoppage on a mid-sized production line can save **€50,000–€200,000**.
-- **Expert Dispatch Cost:** Senior engineers are consulted via CoVA instead of being flown to site. Reduction of just 20 site visits/year saves **€40,000+** in travel and opportunity cost.
-- **Onboarding acceleration:** Maintenance case studies show **30% faster onboarding** for new hires when AI-guided workflows are available.
+**Hosting candidates for the full-duplex session service:**
 
-**Qualitative:**
-- **Safety:** Faster access to emergency protocols and hazardous-material handling procedures without stopping the task or removing PPE.
-- **Capability:** Junior staff perform complex tasks safely because the assistant guides them step-by-step, hands-free.
-- **Inclusion:** 18,000 employees, many deskless, now access the same institutional knowledge as office staff.
+- **AWS Lambda MicroVMs:** Dedicated WebSocket endpoint per session, fast snapshot start, suspends when idle (ideal for intermittent pilot queries; zero idle compute).
+- **AWS ECS / Fargate:** Shared container pool behind an ALB (ideal for production scale with high, sustained concurrency).
 
 ::: {.notes}
-Always anchor business value in numbers, even if they are estimates. The phrase "2.5 FTEs" is memorable. Be ready to explain your assumptions (3 queries/day is conservative; some workers may use it 10×, others 0×). The safety argument is the strongest—frame it as risk reduction, not just convenience.
+About 2 minutes. Propose testing MicroVMs first for the intermittent pilot, subject to region availability and IaC support, rather than asserting they are faster or cheaper. These are distinct from ordinary Lambda functions. A backend session broker authenticates the user, launches a MicroVM, and returns its endpoint plus a short-lived port-scoped JWE token. Browser WebSockets can pass MicroVM authentication via subprotocols [3]. That token grants endpoint access, not CoVA permissions. MicroVMs have an eight-hour maximum lifespan including suspension, no load balancing between their dedicated endpoints, and snapshot/storage charges while suspended [4]. Keep them running during active audio; resume hooks must refresh credentials and reconnect to Bedrock. Sonic has a separate eight-minute connection limit and renewal pattern [5]. Fargate may be more efficient when many sessions share warm tasks. Compare full session-ready latency, concurrent session capacity, recovery, and cost per successful task. Ordinary Lambda response streaming is not itself a bidirectional WebSocket server; API Gateway WebSocket integrations retain their own limits [6]. Deploy to staging, run regression evaluation, then use feature flags/canary cohorts with a quick rollback path. Use GitHub OIDC for deployment credentials.
 :::
 
-# Recommendation 📝
+## Rollout: Get to the Next Phase 👷🏻 {.smaller}
 
-> Take advantage of the agentic age
+| Phase | What we validate | Exit evidence |
+|---|---|---|
+| **Experiment** | Jargon, devices, and network profiles | Known failures understood; quality gates agreed |
+| **Pilot** | One frequent, bounded use case | Usable answers, acceptable latency, workflow benefit |
+| **Expansion** | Noise, PPE, connectivity, equipment | Target setup works during representative tasks |
+| **Scale** | More sites, personas, and languages | Repeatable quality, support, and economics |
 
-
-1. Implement **both**, the hybrid, cloud-enabled STT+TTS option **and** the full-duplex voice mode
-1. **Prototype** both solutions for different user personas in their respective environments over a 6-12 week period
-1. Build and refine custom vocabulary with domain experts
-1. Start with mobile phones were appropriate, and test EX-certified equipment where necessary
-1. Gradually rollout and operate both solutions, until all users are served well with a **single** solution
+**Proposed evaluation window: 6–12 weeks**, not a promise of global production.
 
 ::: {.notes}
-- tbd
+About 2 minutes. Recruit representative users with operations, domain experts, and relevant local stakeholders. Start with a permitted environment and a bounded use case, not an arbitrary headcount. Give users a short onboarding session and a clear feedback/support route. For lab users, focus on glove-compatible lookup; for plant users, equipment approval and noise; for drivers, brief audio and suitable controls where permitted. Compare modes on the same tasks rather than different populations alone. Local-language validation is a later expansion gate, even if a model technically supports the language. Name a product owner and operational owner before scaling.
 :::
 
-# Q&A
+## Monitoring: What Breaks? 🔎
+
+- **Operations:** Latency, failed sessions, connection drops, cost per successful task.
+- **Quality:** Domain errors, clarification, and task failure by mode and environment.
+- **Feedback:** Weekly review with users and domain experts.
+- **Improvement:** Versioned evaluation before changing models, vocabulary, or prompts.
+
+::: {.notes}
+About 1.5 minutes. CloudWatch dashboards and correlated session traces across voice and CoVA. Separate capture, transcription, retrieval/answer, streaming, and playback failures. Alert on service degradation and disable a problematic mode if needed. Track model, vocabulary, prompt, device, and client versions to identify regressions. Do not interpret every clarification as failure; the correct question can prevent a wrong answer. Use selected, authorised diagnostic recordings with defined retention rather than logging all audio by default. Feed knowledge failures back to the CoVA team and audio/UX failures to the voice team.
+:::
+
+# Limitations & Recommendation 🧐📝
+
+## Limitations 🧐
+
+- **No connectivity**: No (live) CoVA answer.
+- Some environments may **never** support an approved, usable voice setup.
+- English-first validates the technology, **not** global adoption.
+
+::: {.notes}
+About 1 minute. Equipment cost, battery life, model quality, and operational acceptance remain empirical questions. This assistant is an information-access channel; it is not a substitute for required procedures or emergency systems. Full-duplex spoken-answer fidelity is an additional evaluation concern. Avoid claiming that model support for a language proves usability for a local workforce. Transition: given these limits, here is the next decision to make.
+:::
+
+## Recommendation: One CoVA, with voice modes that fit the job 📝
+
+1. Build a **KISS baseline** on the existing CoVA stack.
+2. Validate **jargon, audio usability, and workflow value** with representative users.
+3. Compare **hybrid and full-duplex** against the same tasks over 6–12 weeks.
+4. **Expand by environment** when the evidence supports it.
+
+::: {.notes}
+About 1.5 minutes. Ask for a bounded pilot with an operational partner and access to representative tasks, devices, and source material. The outcome is evidence for which modes and equipment to productionize, with an owner and support path. We can keep one shared CoVA integration and evaluation framework while supporting multiple voice experiences. Do not promise convergence to one mode or operating every option indefinitely.
+:::
+
+## Q&A
 
 Thank you 🙏🏻
 
 ::: {.notes}
-Be ready for these likely questions:
-- "How do you handle authentication without typing?" → Answer: Device-bound tokens via MDM + short-lived session from badge tap or voice-biometric opt-in.
-- "What's the cost at scale?" → Answer: AWS sample projects show a **10-minute Nova Sonic session costs ~$0.044** (including STT, TTS, and infrastructure). A typical CoVA voice query lasts 1–2 minutes, so **~$0.005–0.01 per query**. At 1,000 users × 3 queries/day × 250 days = 750,000 queries/year ≈ **$4,000–7,500/year**. One avoided unplanned stoppage pays for the entire program.
-- "Why not use NVIDIA Parakeet on-device?" → Answer: Parakeet IS deployable on mobile — iOS via CoreML/ANE (parakeet-coreml) and Android via ONNX Runtime (parakeet-voice-android, soniqo.audio). We initially dismissed it too quickly. However, Parakeet TDT is a transducer that auto-detects language and cannot be forced to "German only" — a safety issue in German plants. It is also larger (~0.6B params) and newer on mobile. We select Whisper as the pragmatic Phase 1 fallback for language forcing and ecosystem maturity, but keep Parakeet as an A/B test candidate for its streaming latency advantage.
-- "Why not make on-device STT the primary path?" → Answer: Whisper tiny/base WER on technical jargon is ~15-20% vs. cloud contextual-biased models at <5%. In a chemical plant, mishearing a chemical name is a safety risk. Battery and model-update overhead also favor cloud-primary in connected zones. We use on-device only as a dead-zone fallback and A/B test its viability.
-- "What if the model hallucinates an SOP?" → Answer: Same safeguards as text CoVA (RAG grounding, confidence thresholds, human escalation); voice does not weaken the trust layer.
+Likely questions & panel challenges:
+
+- Why Nova 2 Sonic vs. OpenAI Realtime / Gemini Live? Data residency, existing AWS CDK stack, IAM perimeter, and enterprise Bedrock tenant. Keeps data strictly inside Covestro. The session relay architecture isolates the model provider—if Sonic underperforms, we can swap backends without frontend changes.
+- PWA vs. Native Mobile with hardware PTT buttons? Web Bluetooth/Audio has limits when backgrounded or locked. Lab pilot uses active screens. For pocketed plant phones, bench testing will determine if a lightweight native wrapper (Capacitor/Kotlin) is needed for background hardware PTT hooks.
+- RAG tool latency in full-duplex (Sonic waiting for CoVA)? Sonic supports conversational prosody, but artificial filler phrases annoy operators. The session service sends an audible earcon/status cue so the user knows CoVA is retrieving verified facts, avoiding ungrounded speech.
+- High EX headset costs vs. small pilot scale? In chemical operations, ROI is driven by avoiding unplanned downtime (€50k–€100k+ per stoppage) and compliance errors, not typing speed. Preventing one incident pays for the program.
+- Authentication without typing? Reuse CoVA/Entra sign-in on managed devices, within session policy. MDM alone does not authenticate a person. A MicroVM token is a separate endpoint credential.
+- Why not local STT everywhere? Benchmark it; feasibility, duty-cycle battery use, jargon, and supported device runtimes determine whether it wins.
+- Why MicroVMs? Dedicated WebSocket ingress and on-demand lifecycle are useful for intermittent sessions. Compare with pooled Fargate capacity; do not assume lower cost or latency.
+- What happens after a connection drop? Show status, cancel stale turns, reconnect and renew the Sonic stream, and restore context explicitly. Do not silently replay a question.
+- What if the answer is wrong? Keep CoVA's grounding and authorization, confirm ambiguous entities, and evaluate spoken output separately. Grounding is not a guarantee against hallucination.
+- Make or buy? Use managed speech services and approved commercial equipment. Build the voice-to-CoVA adapter, user experience, and evaluation. Broader platform replacement is unnecessary for this scope.
+- Cost at scale? Measure speech duration, CoVA/tool inference, concurrency, hosting, snapshots/networking, equipment, and support. Estimate cost per successful task with the selected region's current prices.
+
+Sources for technical claims:
+
+1: AWS Nova 2 Sonic TypeScript example: https://github.com/aws-samples/amazon-nova-samples/tree/main/speech-to-speech/amazon-nova-2-sonic/sample-codes/websocket-nodejs
+2. Amazon Transcribe custom vocabularies: https://docs.aws.amazon.com/transcribe/latest/dg/custom-vocabulary.html
+3. Lambda MicroVM networking: https://docs.aws.amazon.com/lambda/latest/dg/microvms-networking.html
+4. Lambda MicroVM lifecycle: https://docs.aws.amazon.com/lambda/latest/dg/microvms-launching.html
+5. Nova 2 Sonic capabilities and connection limit: https://docs.aws.amazon.com/nova/latest/nova2-userguide/using-conversational-speech.html
+6. API Gateway WebSocket integration limits: https://docs.aws.amazon.com/apigateway/latest/developerguide/apigateway-execution-service-websocket-limits-table.html
 :::
