@@ -446,7 +446,7 @@ Stefan Langenbach
 </tr>
 <tr class="even">
 <td><strong>Task success</strong></td>
-<td>Usable information without switching channel</td>
+<td>Voice queries answered usefully without retry or fallback to another channel</td>
 </tr>
 <tr class="odd">
 <td><strong>Latency</strong></td>
@@ -465,6 +465,7 @@ Stefan Langenbach
 <li>Latency budget justification (p95 ≤ 3s): Human conversational psychology says, if latency exceeds 2–3s, users assume the system failed and press PTT again, causing duplicate queries.</li>
 <li>Evaluate meaningful response latency, not a filler phrase such as ‘Let me check’.</li>
 <li>Track return usage, clarification, retries, mode changes, and user feedback as diagnostic measures.</li>
+<li>Task success is per voice query, measured from correlated voice/text session logs; clarifications are not retries. Silent failure — an unusable answer accepted or a question deferred — is the blind spot, so read it together with domain accuracy and the weekly user review. Reading on-screen citations is not a fallback.</li>
 </ul>
 <style type="text/css">
         span.MJX_Assistive_MathML {
@@ -507,7 +508,7 @@ Stefan Langenbach
 <tr class="odd">
 <td><strong>Full-duplex</strong></td>
 <td>Streaming speech-to-speech + CoVA integration</td>
-<td>Does natural conversation help?</td>
+<td>Does interruptible dialogue — follow-ups, no PTT — improve task completion while preserving grounded answers?</td>
 </tr>
 </tbody>
 </table>
@@ -520,6 +521,7 @@ Stefan Langenbach
 <li>Local models such as Whisper are candidates to benchmark, not a settled mobile solution.</li>
 <li>AWS Nova 2 Sonic is the full-duplex candidate.</li>
 <li>Hybrid can be an environment-specific mode rather than an automatic fallback on every latency spike.</li>
+<li>Full-duplex uniquely tests turn-taking/interruption and grounding fidelity through the tool bridge; session economics of persistent streaming are the second thing to learn.</li>
 </ul>
 <style type="text/css">
         span.MJX_Assistive_MathML {
@@ -572,9 +574,7 @@ sequenceDiagram
 <li>Reuses CoVA’s text path; speech is the only addition.</li>
 <li>AWS building blocks: PWA on S3 + CloudFront; Voice API on API Gateway + Lambda; managed speech on Amazon Transcribe and Polly.</li>
 <li>Implementation note: API Gateway/Lambda can implement bounded turn-based requests; establish audio/request limits and use an asynchronous path if processing exceeds the chosen integration timeout.</li>
-<li>Device credentials authenticate access, but the backend must validate the user session and enforce CoVA permissions.</li>
-<li>Preserve text and source references.</li>
-<li>Use service-compatible audio formats; codec selection is a measured implementation detail.</li>
+<li>Device credentials authenticate access, but the backend must validate the user session and enforce permissions.</li>
 </ul>
 <style type="text/css">
         span.MJX_Assistive_MathML {
@@ -621,9 +621,6 @@ sequenceDiagram
 <li>No extra voice backend: the PWA calls CoVA’s existing API directly — the same path CoVA’s own Angular frontend uses; no AWS speech services are billed in this mode.</li>
 <li>On-device TTS is an option: small neural TTS models such as Kokoro (82M params) or Piper (VITS) run in the browser via WebAssembly/WebGPU (e.g.&nbsp;sherpa-onnx or transformers.js), fully offline.</li>
 <li>Trade-off: local TTS voice quality and language coverage are below cloud Polly, and the model bundle adds tens of MB to the PWA — benchmark before committing.</li>
-<li>Local STT is a candidate to benchmark (e.g.&nbsp;Whisper variants via sherpa-onnx), not a settled mobile solution.</li>
-<li>(Q&amp;A prep) If runtime fallback between KISS and Hybrid is required, reintroduce a thin Voice API as the shared endpoint (one auth context, one telemetry stream); without fallback it is an unnecessary pass-through hop.</li>
-<li>(Q&amp;A prep) Newer speech-LM options such as Neuphonic’s NeuTTS (Nano family, incl.&nbsp;a German model; GGUF/llama.cpp; instant voice cloning; watermarked output) show where local voice quality is heading. They are native-first (Python/llama.cpp), so a PWA path would need WASM/ONNX packaging — treat as a benchmark candidate, not a settled choice.</li>
 </ul>
 <style type="text/css">
         span.MJX_Assistive_MathML {
@@ -654,12 +651,12 @@ sequenceDiagram
 
     Worker-&gt;&gt;UI: Start session &amp; speak
     UI-&gt;&gt;Relay: Stream audio (WebSocket)
-    Relay-&gt;&gt;Sonic: Bidirectional audio stream
+    Relay-&gt;&gt;Sonic: Stream worker audio (upstream)
     Sonic-&gt;&gt;Relay: Tool call: Query CoVA
     Relay-&gt;&gt;CoVA: Query with user identity &amp; permissions
     CoVA--&gt;&gt;Relay: Grounded knowledge response
     Relay-&gt;&gt;Sonic: Return tool result
-    Sonic--&gt;&gt;Relay: Stream synthesized answer audio + text
+    Sonic--&gt;&gt;Relay: Stream synthesized answer audio + text (downstream)
     Relay--&gt;&gt;UI: Forward audio stream &amp; citations
     UI--&gt;&gt;Worker: Play spoken answer in real time
 </pre>
@@ -671,11 +668,10 @@ sequenceDiagram
 <aside class="notes">
 <ul>
 <li>About 2 minutes.</li>
+<li>Full-duplex adds a conversational model around CoVA.</li>
 <li>Use <code>InvokeModelWithBidirectionalStream</code> and adapt the AWS TypeScript sample [1].</li>
 <li>Interruption handling: Nova Sonic natively handles interruptions. When the worker speaks while audio is playing, new audio events sent via WebSocket trigger an interruption event from Sonic back to the Session Service, causing the UI to immediately cancel audio playback.</li>
-<li>Full-duplex adds a conversational model around CoVA.</li>
-<li>Configure information requests to use CoVA and evaluate whether Sonic faithfully preserves tool results, especially numbers, units, and instructions.</li>
-<li>The session service is persistent compute, not an ordinary Lambda invocation per audio chunk. Hosting candidates are Lambda MicroVMs or ECS/Fargate behind a WebSocket endpoint (see Deployment); Nova 2 Sonic is consumed via Bedrock.</li>
+<li>The bidirectional stream is two concurrent edges: worker audio upstream, model audio and events downstream. Tool calls originate from the model (toolUse); the session service executes them and returns the result (toolResult).</li>
 </ul>
 <style type="text/css">
         span.MJX_Assistive_MathML {
@@ -768,8 +764,7 @@ sequenceDiagram
 <li>About 1 minute.</li>
 <li>Recognition and knowledge grounding solve different problems: retrieving the right document cannot reliably fix an incorrectly recognized chemical name.</li>
 <li>Amazon Transcribe supports custom vocabularies [2]; do not claim the same API exists for Sonic.</li>
-<li>Use recordings with representative accents, noise, and PPE, plus held-out evaluation data. Confidence-based confirmation is an option only where appropriate scores are exposed and calibrated.</li>
-<li>A universal 0.85 threshold is not justified. Evaluate whether spoken acronyms, decimal values, and units are understandable to listeners.</li>
+<li>Use recordings with representative accents, noise, and PPE, plus held-out evaluation data.</li>
 </ul>
 <style type="text/css">
         span.MJX_Assistive_MathML {
@@ -795,8 +790,9 @@ sequenceDiagram
 <ul>
 <li>About 1 minute.</li>
 <li>Hardware is part of the solution, not an accessory.</li>
-<li>What does “intelligible” mean here? Audible ≠ intelligible. High plant noise combined with hearing protection (earplugs/ear defenders attenuating 25–30 dB) turns soft consonants into muffled sound. If CoVA says “fifteen” and the worker hears “fifty”, or confuses “sulfate” with “sulfite”, it creates severe safety hazards. Intelligible speech requires dynamic range compression, EQ peaking in the speech clarity band (1–3 kHz), and deliberate pacing.</li>
-<li>A headset’s PTT button may not be exposed to browser code; validate Bluetooth controls, browser lifecycle, microphone permissions, and background behavior. If the PWA cannot support the required hardware interaction, move that persona to a native app rather than forcing the web stack.</li>
+<li>What does “intelligible” mean here? Audible ≠ intelligible. High plant noise combined with hearing protection (earplugs/ear defenders attenuating 25–30 dB) turns soft consonants into muffled sound. If CoVA says “fifteen” and the worker hears “fifty”, or confuses “sulfate” with “sulfite”, it creates severe safety hazards.</li>
+<li>A headset’s PTT button may not be exposed to browser code -&gt; validate</li>
+<li>If the PWA cannot support the required hardware interaction, move that persona to a native app</li>
 </ul>
 <style type="text/css">
         span.MJX_Assistive_MathML {
@@ -825,7 +821,7 @@ sequenceDiagram
 <li>A fallback based on one two-second delay is too simplistic; use observed network behavior and visible user control.</li>
 <li>Cancel stale requests and prevent duplicate turns after retry.</li>
 <li>Text display is an option only when eyes and equipment permit it.</li>
-<li>A limited cache of approved information would be a separate versioned capability; local STT alone does not provide offline knowledge access.</li>
+<li>A limited cache of approved information would be a separate versioned capability</li>
 <li>Geolocation may suggest a mode but is not proof of device permission and should not automatically start recording.</li>
 </ul>
 <style type="text/css">
@@ -861,9 +857,9 @@ sequenceDiagram
 <aside class="notes">
 <ul>
 <li>About 1.5 minutes.</li>
-<li>Propose testing MicroVMs first for the intermittent pilot, subject to region availability and IaC support, rather than asserting they are faster or cheaper. These are distinct from ordinary Lambda functions. A backend session broker authenticates the user, launches a MicroVM, and returns its endpoint plus a short-lived port-scoped JWE token. Browser WebSockets can pass MicroVM authentication via subprotocols [3]. That token grants endpoint access, not CoVA permissions. MicroVMs have an eight-hour maximum lifespan including suspension, no load balancing between their dedicated endpoints, and snapshot/storage charges while suspended [4]. Keep them running during active audio; resume hooks must refresh credentials and reconnect to Bedrock. Sonic has a separate eight-minute connection limit and renewal pattern [5].</li>
-<li>Fargate may be more efficient when many sessions share warm tasks. Compare full session-ready latency, concurrent session capacity, recovery, and cost per successful task. Ordinary Lambda response streaming is not itself a bidirectional WebSocket server; API Gateway WebSocket integrations retain their own limits [6].</li>
-<li>Deploy to staging, run regression evaluation, then use feature flags/canary cohorts with a quick rollback path. Use GitHub OIDC for deployment credentials.</li>
+<li>Propose testing MicroVMs first for the intermittent pilot, subject to region availability and IaC support, rather than asserting they are faster or cheaper. A backend session broker authenticates the user, launches a MicroVM, and returns its endpoint plus a short-lived port-scoped JWE token. Browser WebSockets can pass MicroVM authentication via subprotocols [3]. Keep them running during active audio</li>
+<li>Sonic has a separate eight-minute connection limit and renewal pattern [5].</li>
+<li>Fargate may be more efficient when many sessions share warm tasks.</li>
 </ul>
 <style type="text/css">
         span.MJX_Assistive_MathML {
@@ -920,9 +916,9 @@ sequenceDiagram
 <ul>
 <li>About 2 minutes.</li>
 <li>Recruit representative users with operations, domain experts, and relevant local stakeholders.</li>
+<li>Give users a short onboarding session and a clear feedback/support route.</li>
 <li>Start with a permitted environment and a bounded use case, not an arbitrary headcount.</li>
 <li>The expansion phase is the client decision gate: stay on the PWA where screens are active; plan a native track where PTT hardware, background use, or on-device speech demand it.</li>
-<li>Give users a short onboarding session and a clear feedback/support route.</li>
 </ul>
 <style type="text/css">
         span.MJX_Assistive_MathML {
@@ -951,7 +947,6 @@ sequenceDiagram
 <li>Track model, vocabulary, prompt, device, and client versions to identify regressions.</li>
 <li>Do not interpret every clarification as failure; the correct question can prevent a wrong answer.</li>
 <li>Use selected, authorized diagnostic recordings with defined retention rather than logging all audio by default.</li>
-<li>Feed knowledge failures back to the CoVA team and audio/UX failures to the voice team.</li>
 </ul>
 <style type="text/css">
         span.MJX_Assistive_MathML {
